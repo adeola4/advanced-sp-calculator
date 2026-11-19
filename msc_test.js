@@ -214,5 +214,22 @@ const kWant = (1 + (132 * 1.8 + 30) / 100 + 40 / 50) / (1 + (132 * 1.8 + 30) / 1
 ok('observed range scales by the rage share', obsBuffed.obsMax, 2000 * kWant, 1);
 eq('rage leaves the base object untouched', obsC.A, 0);
 
+// --- anchor 16: cast times from MSCW's animation table (guide rounds to 30 ms)
+const CAST_CASES = [
+  ['power-strike', { tier: 5 }, 750], ['power-strike', { tier: 4 }, 720], ['power-strike', { tier: 4, booster: true }, 600],
+  ['rush', { tier: 8 }, 450], ['rush', { tier: 4 }, 360], ['rush', { tier: 4, booster: true }, 300],
+  ['double-stab', { tier: 4 }, 720], ['double-stab', { tier: 3 }, 660], ['double-stab', { tier: 3, booster: true }, 570],
+  ['lucky-seven', { tier: 5 }, 750], ['lucky-seven', { tier: 3 }, 660], ['lucky-seven', { tier: 3, booster: true }, 570],
+  ['savage-blow', { tier: 4 }, 840], ['savage-blow', { tier: 3 }, 780], ['savage-blow', { tier: 3, booster: true }, 660],
+  ['arrow-blow', { tier: 6 }, 810], ['arrow-blow', { tier: 5 }, 750], ['double-shot', { tier: 5, booster: true }, 660],
+  ['fire-arrow', {}, 810], ['fire-arrow', { spellBooster: 5 }, 750], ['fire-arrow', { spellBooster: 11 }, 720],
+  ['poison-breath', {}, 810], ['cold-beam', { spellBooster: 11 }, 720], ['holy-arrow', {}, 810]
+];
+let castBad = [];
+CAST_CASES.forEach(([id, o, want]) => { const got = MSC.castTime(id, o); if (Math.abs(got - want) > 30) castBad.push([id, o, got, want]); });
+eq('cast times match the MSCW animation table', castBad, []);
+eq('every magician spell sits at the fixed 810 ms', ['fire-arrow', 'poison-breath', 'cold-beam', 'thunder-bolt', 'holy-arrow', 'magic-claw', 'energy-bolt'].map(id => MSC.castTime(id, {})), [810, 810, 810, 810, 810, 810, 810]);
+eq('Spell Booster only touches magician spells', [MSC.castTime('fire-arrow', { spellBooster: 11 }), MSC.castTime('power-strike', { tier: 5, spellBooster: 11 })], [720, 750]);
+
 console.log(fails === 0 ? '\nALL CHECKS PASSED' : `\n${fails} CHECK(S) FAILED`);
 process.exit(fails === 0 ? 0 : 1);

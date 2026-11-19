@@ -83,6 +83,9 @@
       <div class="f"><label>Total INT</label><input id="INT" type="number" value="300"></div>
       <div class="f"><label>Total Magic Attack (gear + buffs)</label><input id="MATK" type="number" value="100"></div>
       <div class="f"><label>Spell mastery level (0–10)</label><input id="spML" type="number" value="10" min="0" max="10"></div>
+      <div class="f"><label>Spell Booster</label>
+        <select id="spellBooster"><option value="0">off — 810 ms</option><option value="1">Lv 1–10 — 750 ms</option><option value="11">Lv 11+ — 720 ms</option></select>
+      </div>
     </div>
     <div id="physBlock" style="display:none">
       <div class="f"><label id="Plabel">Primary stat (STR)</label><input id="P" type="number" value="132"></div>
@@ -91,6 +94,8 @@
       <div class="f"><label>Attack Power buff (A)</label><input id="AP" type="number" value="0"></div>
       <div class="f"><label>Weapon mastery level (0–10)</label><input id="ML" type="number" value="0" min="0" max="10"></div>
       <div class="f"><label>Weapon</label><select id="W"></select></div>
+      <div class="f"><label>Weapon speed</label><select id="wtier"></select></div>
+      <div class="f"><label>Booster (−2 tiers)</label><select id="booster"><option value="">off</option><option value="1">on</option></select></div>
     </div>
     <div class="f"><label>Crit rate % (base 5)</label><input id="critRate" type="number" value="5" step="0.1"></div>
     <div class="f"><label>Crit damage % (base 20)</label><input id="critDmg" type="number" value="20" step="0.1"></div>
@@ -112,18 +117,20 @@
     <h3 style="margin-top:0" id="s1head">Skill A</h3>
     <div class="f"><label>Skill</label><select id="s1id"></select></div>
     <div class="f"><label>Skill level</label><input id="s1lv" type="number" value="30" min="1" max="30"></div>
-    <div class="f"><label>Cast time ms</label><input id="s1ms" type="number" value="810" min="200"></div>
+    <div class="f"><label>Measured ms <span class="dim">(optional)</span></label><input id="s1ms" type="number" min="200" placeholder="auto"></div>
+    <div class="mini" id="s1msOut"></div>
     <div class="f"><label>Observed hit MIN <span class="dim">(optional)</span></label><input id="s1obsMin" type="number" placeholder="pre-defence"></div>
     <div class="f"><label>Observed hit MAX</label><input id="s1obsMax" type="number" placeholder="pre-defence"></div>
     <div class="mini" id="s1info"></div>
     <h3 id="s2head">Skill B</h3>
     <div class="f"><label>Skill</label><select id="s2id"></select></div>
     <div class="f"><label>Skill level</label><input id="s2lv" type="number" value="30" min="1" max="30"></div>
-    <div class="f"><label>Cast time ms</label><input id="s2ms" type="number" value="810" min="200"></div>
+    <div class="f"><label>Measured ms <span class="dim">(optional)</span></label><input id="s2ms" type="number" min="200" placeholder="auto"></div>
+    <div class="mini" id="s2msOut"></div>
     <div class="f"><label>Observed hit MIN <span class="dim">(optional)</span></label><input id="s2obsMin" type="number" placeholder="pre-defence"></div>
     <div class="f"><label>Observed hit MAX</label><input id="s2obsMax" type="number" placeholder="pre-defence"></div>
     <div class="mini" id="s2info"></div>
-    <div class="mini">Damage %, MP, hits, target cap, mastery level and DoT are pulled from the MSCW skill database at the level you pick. An observed hit line overrides the formula for that skill.</div>
+    <div class="mini">Damage %, MP, hits, target cap, mastery level and DoT are pulled from the MSCW skill database. Cast time is derived from MSCW's animation table — every magician spell is a fixed 810 ms (750/720 with Spell Booster), weapon skills follow your weapon's speed tier and lose two tiers to Booster. Type a number only if you timed your own cast.</div>
   </section>
 
   <section class="panel">
@@ -215,7 +222,6 @@ function selectClass(id) {
   if (st.INT != null) $('INT').value = st.INT;
   if (st.MATK != null) $('MATK').value = st.MATK;
   if (st.P != null) { $('P').value = st.P; $('Q').value = st.Q; $('WATK').value = st.WATK; }
-  if (st.ms) { $('s1ms').value = st.ms; $('s2ms').value = st.ms; }
   syncClass();
 }
 function selectJob(id) { $('job').value = id; syncClass(); }
@@ -229,8 +235,18 @@ function character() {
     obsMin: num('obsMin'), obsMax: num('obsMax')
   };
 }
+function weaponTier() {
+  const v = parseInt($('wtier').value, 10);
+  return isNaN(v) ? 6 : v;
+}
+function timingOpts() {
+  return { tier: weaponTier(), booster: $('booster').value === '1', spellBooster: +$('spellBooster').value || 0 };
+}
 function resolve(prefix) {
-  const sk = MSC.skillAt($(prefix + 'id').value, num(prefix + 'lv'), { ms: num(prefix + 'ms') || 810 });
+  const id = $(prefix + 'id').value;
+  const auto = MSC.castTime(id, timingOpts());
+  const typed = num(prefix + 'ms');
+  const sk = MSC.skillAt(id, num(prefix + 'lv'), { ms: typed > 0 ? typed : auto });
   if (sk.klass === 'magic' && $('spML').value !== '') sk.spellMastery = Math.max(0, Math.min(10, num('spML')));
   sk.obsMin = num(prefix + 'obsMin');
   sk.obsMax = num(prefix + 'obsMax');
@@ -262,6 +278,18 @@ function compute() {
     if (sk.dotPct > 0) bits.push(`DoT ${fmt(sk.dotPct)}% over ${sk.dotSec}s${sk.dotChance < 1 ? ' @' + Math.round(sk.dotChance * 100) + '%' : ''}`);
     $(id).innerHTML = bits.join(' · ');
   };
+  const msLine = (sk, id) => {
+    const t = timingOpts();
+    const auto = MSC.castTime(sk.id || sk.name, t);
+    const label = sk.klass === 'magic'
+      ? (t.spellBooster >= 11 ? 'magic, Spell Booster 11+' : t.spellBooster >= 1 ? 'magic, Spell Booster 1–10' : 'magic, fixed')
+      : `${MSC.SPEED_LABEL[Math.max(0, Math.min(10, t.tier - (t.booster ? 2 : 0)))]}${t.booster ? ' + Booster' : ''}`;
+    const isAuto = Math.abs(sk.ms - auto) < 1;
+    $(id).innerHTML = isAuto
+      ? `cast <b>${sk.ms} ms</b> <span class="dim">— from MSCW timing (${label})</span>`
+      : `cast <b>${sk.ms} ms</b> <span class="dim">— your measured value (model says ${auto} ms)</span>`;
+  };
+  msLine(A, 's1msOut'); msLine(B, 's2msOut');
   info(A, 's1info'); info(B, 's2info');
   $('s1head').textContent = 'Skill A — ' + A.name;
   $('s2head').textContent = 'Skill B — ' + B.name;
@@ -442,6 +470,13 @@ function syncClass(keepWeapon) {
   $('W').value = String(pick.w);
   const wi = wl[Math.max(0, wl.findIndex(w => String(w.w) === $('W').value))] || wl[0];
   $('W').setAttribute('data-primary', wi.primary); $('W').setAttribute('data-secondary', wi.secondary);
+  const tr = wi.tierRange || [wi.tier || 6, wi.tier || 6];
+  let tiers = '';
+  for (let t = tr[0]; t <= tr[1]; t++) tiers += `<option value="${t}">${MSC.SPEED_LABEL[t]} — ${MSC.SPEED_LADDER[t]} ms</option>`;
+  $('wtier').innerHTML = tiers;
+  const prevTier = parseInt($('wtier').getAttribute('data-t'), 10);
+  $('wtier').value = String(tr.indexOf(prevTier) >= 0 ? prevTier : wi.tier);
+  $('wtier').setAttribute('data-t', $('wtier').value);
   $('Plabel').textContent = wi.primary + ' (primary)';
   $('Qlabel').textContent = wi.secondary + ' (secondary)';
 
@@ -456,6 +491,7 @@ function syncClass(keepWeapon) {
   $('s1id').value = pair[0]; $('s2id').value = pair[1];
   $('s1lv').max = MSC.SKILLS[pair[0]].maxLevel; $('s2lv').max = MSC.SKILLS[pair[1]].maxLevel;
   $('s1lv').value = MSC.SKILLS[pair[0]].maxLevel; $('s2lv').value = MSC.SKILLS[pair[1]].maxLevel;
+  if (!keepWeapon) { $('s1ms').value = ''; $('s2ms').value = ''; }
   const jobName = MSC.jobById(classId, jobId).name;
   $('whoOut').innerHTML = `<b>${MSC.classById(classId).name}</b> · ${jobName} — ${klass === 'magic' ? 'INT × MATK' : wi.primary + ' × ' + wi.name}`;
   renderBars();
@@ -473,7 +509,7 @@ $('mode').addEventListener('change', () => {
   compute();
 });
 mobSel.addEventListener('change', () => { loadMob(); compute(); });
-['plv','INT','MATK','spML','P','Q','WATK','AP','ML','critRate','critDmg','obsMin','obsMax',
+['plv','INT','MATK','spML','P','Q','WATK','AP','ML','critRate','critDmg','obsMin','obsMax','wtier','booster','spellBooster',
  's1id','s1lv','s1ms','s1obsMin','s1obsMax','s2id','s2lv','s2ms','s2obsMin','s2obsMax',
  'mlv','mhp','mdef','mexp','nMobs','eFire','ePoison','eIce','eLightning','potPrice','potMP'].forEach(id => {
   const el = $(id);

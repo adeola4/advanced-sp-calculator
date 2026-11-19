@@ -184,5 +184,29 @@ check('import reports the weapon attack it read', /W\.ATK 47/.test(el('importNot
 check('import switches to observed mode', el('mode').value === 'observed');
 check('import reports what it read', /Read from your screenshot/.test(el('importNote').innerHTML));
 
+// --- cast timing comes from MSCW's animation table, not a guess
+clickClass('magician'); clickJob('fp');
+check('magician cast time is the fixed 810 ms', /cast 810 ms/.test(plain(el('s1msOut').innerHTML)), plain(el('s1msOut').innerHTML));
+check('magician timing is labelled fixed', /magic, fixed/.test(plain(el('s1msOut').innerHTML)));
+el('spellBooster').value = '11'; el('spellBooster').fire('change');
+check('Spell Booster 11+ drops the cast to 720 ms', /cast 720 ms/.test(plain(el('s1msOut').innerHTML)), plain(el('s1msOut').innerHTML));
+const boostedEpm = rowEpm('My own levels');
+el('spellBooster').value = '0'; el('spellBooster').fire('change');
+check('losing Spell Booster slows the DPS back down', rowEpm('My own levels') < boostedEpm, boostedEpm + ' -> ' + rowEpm('My own levels'));
+
+clickClass('warrior');
+check('sword warrior casts Power Strike at 750 ms (Fast 5)', /cast 750 ms/.test(plain(el('s1msOut').innerHTML)), plain(el('s1msOut').innerHTML));
+el('wtier').value = '4'; el('wtier').fire('change');
+el('booster').value = '1'; el('booster').fire('change');
+check('Fast (4) weapon + Booster = 600 ms', /cast 600 ms/.test(plain(el('s1msOut').innerHTML)), plain(el('s1msOut').innerHTML));
+el('booster').value = ''; el('booster').fire('change');
+
+clickJob('spearman');
+check('spear is Slow (7) at 870 ms for Power Strike', /cast 870 ms/.test(plain(el('s1msOut').innerHTML)), plain(el('s1msOut').innerHTML));
+check('Rush is a faster animation on the same weapon', /cast 450 ms/.test(plain(el('s2msOut').innerHTML)), plain(el('s2msOut').innerHTML));
+
+el('s1ms').value = '700'; el('s1ms').fire('input');
+check('a typed value is shown as measured, with the model beside it', /your measured value/.test(plain(el('s1msOut').innerHTML)) && /model says/.test(plain(el('s1msOut').innerHTML)), plain(el('s1msOut').innerHTML));
+
 console.log(fails === 0 ? '\nUI SMOKE TEST PASSED' : `\n${fails} UI CHECK(S) FAILED`);
 process.exit(fails === 0 ? 0 : 1);

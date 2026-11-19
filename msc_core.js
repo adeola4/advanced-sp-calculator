@@ -390,19 +390,19 @@
   /* Weapon action multipliers read one at a time off the MSCW damage calculator.
      MSCW uses a single mixed-action average per weapon - there is no swing/stab split. */
   const WEAPON_LIST = [
-    { id: "sword1h", name: "One-Handed Sword", w: 1.8, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "fighter", "page"] },
-    { id: "sword2h", name: "Two-Handed Sword", w: 2.5, primary: "STR", secondary: "DEX", classes: ["warrior", "fighter", "page"] },
-    { id: "axe1h", name: "One-Handed Axe", w: 1.92, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "fighter", "page"] },
-    { id: "axe2h", name: "Two-Handed Axe", w: 2.6, primary: "STR", secondary: "DEX", classes: ["warrior", "fighter", "spearman"] },
-    { id: "blunt1h", name: "One-Handed Blunt", w: 1.92, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "page"] },
-    { id: "blunt2h", name: "Two-Handed Blunt", w: 2.6, primary: "STR", secondary: "DEX", classes: ["warrior", "page"] },
-    { id: "spear", name: "Spear", w: 2.3, primary: "STR", secondary: "DEX", classes: ["warrior", "spearman"] },
-    { id: "polearm", name: "Polearm", w: 2.7, primary: "STR", secondary: "DEX", classes: ["warrior", "spearman"] },
-    { id: "bow", name: "Bow", w: 2.5, primary: "DEX", secondary: "STR", classes: ["archer", "hunter"] },
-    { id: "crossbow", name: "Crossbow", w: 2.5, primary: "DEX", secondary: "STR", classes: ["archer", "crossbowman"] },
-    { id: "claw", name: "Claw", w: 3.0, primary: "LUK", secondary: "STR + DEX", classes: ["rogue", "assassin"] },
-    { id: "dagger", name: "Dagger", w: 2.0, primary: "LUK", secondary: "STR + DEX", classes: ["rogue", "bandit"] },
-    { id: "wand", name: "Wand / Staff", w: 0, primary: "INT", secondary: "MATK", magic: true, classes: ["magician", "fp", "il", "cleric"] }
+    { id: "sword1h", name: "One-Handed Sword", w: 1.8, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "fighter", "page"] , tier: 5, tierRange: [4, 5] },
+    { id: "sword2h", name: "Two-Handed Sword", w: 2.5, primary: "STR", secondary: "DEX", classes: ["warrior", "fighter", "page"] , tier: 6, tierRange: [5, 6] },
+    { id: "axe1h", name: "One-Handed Axe", w: 1.92, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "fighter", "page"] , tier: 5, tierRange: [4, 5] },
+    { id: "axe2h", name: "Two-Handed Axe", w: 2.6, primary: "STR", secondary: "DEX", classes: ["warrior", "fighter", "spearman"] , tier: 6, tierRange: [5, 6] },
+    { id: "blunt1h", name: "One-Handed Blunt", w: 1.92, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "page"] , tier: 5, tierRange: [4, 5] },
+    { id: "blunt2h", name: "Two-Handed Blunt", w: 2.6, primary: "STR", secondary: "DEX", classes: ["warrior", "page"] , tier: 7, tierRange: [6, 7] },
+    { id: "spear", name: "Spear", w: 2.3, primary: "STR", secondary: "DEX", classes: ["warrior", "spearman"] , tier: 7, tierRange: [6, 7] },
+    { id: "polearm", name: "Polearm", w: 2.7, primary: "STR", secondary: "DEX", classes: ["warrior", "spearman"] , tier: 8, tierRange: [7, 8] },
+    { id: "bow", name: "Bow", w: 2.5, primary: "DEX", secondary: "STR", classes: ["archer", "hunter"] , tier: 6, tierRange: [5, 6] },
+    { id: "crossbow", name: "Crossbow", w: 2.5, primary: "DEX", secondary: "STR", classes: ["archer", "crossbowman"] , tier: 7, tierRange: [6, 7] },
+    { id: "claw", name: "Claw", w: 3.0, primary: "LUK", secondary: "STR + DEX", classes: ["rogue", "assassin"] , tier: 5, tierRange: [3, 5] },
+    { id: "dagger", name: "Dagger", w: 2.0, primary: "LUK", secondary: "STR + DEX", classes: ["rogue", "bandit"] , tier: 4, tierRange: [3, 4] },
+    { id: "wand", name: "Wand / Staff", w: 0, primary: "INT", secondary: "MATK", magic: true, tier: 6, tierRange: [6, 7], classes: ["magician", "fp", "il", "cleric"] }
   ];
 
   /* attack skills that are not in the base library above.
@@ -592,9 +592,66 @@
     return { C: out, applied };
   }
 
+
+  /* --- cast / animation timing (MSCW) -------------------------------------
+     Speed ladder in milliseconds per tier, straight off the MSCW attack-speed guide.
+     Every magician spell is a fixed 810 ms with any weapon; Spell Booster 1-10 750 ms,
+     11+ 720 ms. Weapon skills follow the ladder for their weapon tier, and the Booster
+     moves two tiers. Skill-specific times are the guide's own rows. */
+  const SPEED_LADDER = [510, 570, 600, 660, 720, 750, 810, 870, 900, 960, 1020];
+  const SPEED_LABEL = ["Super Fast (0)", "Super Fast (1)", "Very Fast (2)", "Very Fast (3)", "Fast (4)",
+    "Fast (5)", "Average (6)", "Slow (7)", "Slow (8)", "Very Slow (9)", "Super Slow (10+)"];
+
+  const ANIM_MAPS = {
+    "power-strike": { 5: 750, 4: 720 },
+    "slash-blast": { 5: 750, 4: 720 },
+    rush: { 8: 450, 4: 360 },
+    "double-stab": { 4: 720, 3: 660 },
+    "lucky-seven": { 5: 750, 3: 660 },
+    drain: { 5: 750, 3: 660 },
+    "savage-blow": { 4: 840, 3: 780 },
+    "arrow-blow": { 6: 810, 5: 750 },
+    "double-shot": { 6: 810, 5: 750 },
+    "arrow-bomb": { 6: 810, 5: 750 },
+    "iron-arrow": { 7: 870, 6: 840 },
+    regular: { 6: 810 }
+  };
+  const MAGIC_CAST_MS = 810;
+  const SPELL_BOOSTER_MS = { 0: 810, 1: 750, 11: 720 };
+
+  function ladderMs(tier) {
+    const t = Math.max(0, Math.min(SPEED_LADDER.length - 1, Math.round(tier)));
+    return SPEED_LADDER[t];
+  }
+  /* a skill's animation as a multiple of the weapon-speed ladder, anchored on the
+     published row (guide rounds to 30 ms, so a transformed value is a model, not a measurement) */
+  function animFactor(id) {
+    const map = ANIM_MAPS[id];
+    if (!map) return 1;
+    const keys = Object.keys(map).map(Number).sort((a, b) => a - b);
+    let sum = 0, n = 0;
+    keys.forEach(t => { const l = ladderMs(t); if (l > 0) { sum += map[t] / l; n++; } });
+    return n ? sum / n : 1;
+  }
+  /* ms for one cast of this skill
+     opts: { tier: weapon speed tier, booster: bool, spellBooster: 0|level } */
+  function castTime(id, opts) {
+    const o = opts || {};
+    const def = SKILLS[id];
+    const magic = def ? def.klass === "magic" : false;
+    if (magic) {
+      if (id === "heal") return 600;
+      const sb = o.spellBooster || 0;
+      return sb >= 11 ? SPELL_BOOSTER_MS[11] : sb >= 1 ? SPELL_BOOSTER_MS[1] : MAGIC_CAST_MS;
+    }
+    const tier = Math.max(0, Math.min(10, (o.tier == null ? 6 : o.tier) - (o.booster ? 2 : 0)));
+    const ms = ladderMs(tier) * animFactor(id);
+    return Math.max(300, Math.min(1050, Math.round(ms / 30) * 30));
+  }
+
   const api = {
-    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS, JOB_WEAPON, BUFFS,
-    buffValue, buffsFor, applyBuffs, buffUnit,
+    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS, JOB_WEAPON, BUFFS, SPEED_LADDER, SPEED_LABEL, MAGIC_CAST_MS,
+    castTime, ladderMs, animFactor, buffValue, buffsFor, applyBuffs, buffUnit,
     classById, jobById, weaponsFor, skillsFor,
     mastery, magicTotal, rawRange, impliedPct, elementMult, levelScale, applyTarget,
     skillAt, atLevel, evaluate, analyze, compare, rankMobs, selfCheck
