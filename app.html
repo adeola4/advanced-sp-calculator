@@ -752,7 +752,21 @@ window.mobIcon = function (n) {
   const numf = id => { const v = parseFloat(($s(id) || {}).value); return isNaN(v) ? 0 : v; };
 
   let klass = 'magician', job = 'fp';
-  const V = { lv: 50, STR: 4, DEX: 4, INT: 300, LUK: 4, MATK: 100, WATK: 47, dmin: 0, dmax: 0, n: 1 };
+  const V = { lv: 50, STR: 4, DEX: 4, INT: 300, LUK: 4, MATK: 100, WATK: 47, dmin: 0, dmax: 0, n: 1, skill: 'fire-arrow', slv: 30 };
+  const CLASS_DEFAULTS = {
+    beginner: { STR: 40, DEX: 20, INT: 20, LUK: 20, WATK: 10, MATK: 5 },
+    warrior:  { STR: 132, DEX: 30, INT: 4, LUK: 4, WATK: 47, MATK: 0 },
+    magician: { STR: 4, DEX: 4, INT: 300, LUK: 4, WATK: 0, MATK: 100 },
+    bowman:   { STR: 60, DEX: 180, INT: 4, LUK: 4, WATK: 70, MATK: 0 },
+    thief:    { STR: 20, DEX: 60, INT: 4, LUK: 180, WATK: 45, MATK: 0 }
+  };
+  function applyDefaults() {
+    const d = CLASS_DEFAULTS[klass] || CLASS_DEFAULTS.warrior;
+    Object.keys(d).forEach(k => { V[k] = d[k]; });
+    V.dmin = 0; V.dmax = 0;
+    V.skill = MSC.JOB_DEFAULTS[job][0];
+    V.slv = MSC.SKILLS[V.skill].maxLevel;
+  }
   const BUFF = {};
 
   function isMagic() { return MSC.classById(klass).klass === 'magic'; }
@@ -767,12 +781,14 @@ window.mobIcon = function (n) {
     [...$s('s_class').querySelectorAll('button')].forEach(b => b.addEventListener('click', () => {
       klass = b.getAttribute('data-c');
       job = MSC.classById(klass).jobs[0].id;
-      BUFFS_RESET();
+      BUFFS_RESET(); applyDefaults();
       drawClass(); drawInputs(); compute();
     }));
     [...$s('s_job').querySelectorAll('button')].forEach(b => b.addEventListener('click', () => {
       job = b.getAttribute('data-j');
       BUFFS_RESET();
+      V.skill = MSC.JOB_DEFAULTS[job][0];
+      V.slv = MSC.SKILLS[V.skill].maxLevel;
       drawClass(); drawInputs(); compute();
     }));
   }
@@ -926,7 +942,7 @@ window.mobIcon = function (n) {
     }));
   }
 
-  window.simpleRender = function () { drawClass(); drawInputs(); compute(); };
+  window.simpleRender = function () { applyDefaults(); drawClass(); drawInputs(); compute(); };
   if (!document.getElementById('viewSimple').hidden) window.simpleRender();
   else { drawClass(); drawInputs(); compute(); }
 })();
