@@ -196,5 +196,16 @@ eq('every job has a default pair, skills and a weapon', badJobs, []);
 eq('savage blow gains hits with level', [MSC.skillAt('savage-blow', 1).hits, MSC.skillAt('savage-blow', 30).hits], [4, 6]);
 eq('fire arrow is F/P only', MSC.skillsFor('magician', 'il').indexOf('fire-arrow'), -1);
 
+// --- anchor 14: buffs (party vs passive) feed the same stat terms the formula uses
+const bmed = MSC.applyBuffs({ lv: 40, klass: 'magic', INT: 300, MATK: 100, ML: 10 }, { meditation: 20 });
+eq('meditation 20 adds +25 MATK', bmed.C.MATK, 125);
+eq('meditation is a party buff for magicians', MSC.buffsFor('magician', 'fp'), ['meditation']);
+eq('no buff level means no change', MSC.applyBuffs({ MATK: 100 }, { meditation: 0 }).C.MATK, 100);
+eq('rage 30 adds +40 attack power', MSC.applyBuffs({ A: 0, critRate: 5 }, { rage: 30 }).C.A, 40);
+const bcrit = MSC.applyBuffs({ critRate: 5, critDmg: 20 }, { 'critical-shot': 15 }).C;
+eq('critical shot 15 at max: rate +20 / dmg +15', [bcrit.critRate, bcrit.critDmg], [25, 35]);
+eq('assassin carries claw mastery + critical throw', MSC.buffsFor('thief', 'assassin').sort(), ['claw-mastery', 'critical-throw']);
+eq('claw mastery 20 adds +20 attack power', MSC.applyBuffs({ A: 0 }, { 'claw-mastery': 20 }).C.A, 20);
+
 console.log(fails === 0 ? '\nALL CHECKS PASSED' : `\n${fails} CHECK(S) FAILED`);
 process.exit(fails === 0 ? 0 : 1);

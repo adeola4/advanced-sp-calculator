@@ -500,8 +500,86 @@
     });
   }
 
+
+  /* --- buffs that change damage -------------------------------------------
+     Meditation and Rage are party-wide in MSCW; the rest are your own passives.
+     Values are the skill database's Lv1 -> max line, interpolated per level. */
+  const BUFFS = {
+    rage: {
+      name: "Rage", party: true, maxLevel: 30, jobs: ["warrior", "fighter", "page", "spearman"],
+      effects: [{ stat: "A", from: 10, to: 40 }],
+      note: "Attack Power +10 → +40, party-wide"
+    },
+    meditation: {
+      name: "Meditation", party: true, maxLevel: 20, jobs: ["magician", "fp", "il", "cleric"],
+      effects: [{ stat: "MATK", from: 5, to: 25 }],
+      note: "Party Magic Attack +5 → +25"
+    },
+    "claw-mastery": {
+      name: "Claw Mastery", maxLevel: 20, jobs: ["assassin"],
+      effects: [{ stat: "A", from: 1, to: 20 }], note: "Passive: Attack Power +1 → +20"
+    },
+    "precise-strikes": {
+      name: "Precise Strikes", maxLevel: 15, jobs: ["warrior", "fighter", "page", "spearman"],
+      effects: [{ stat: "critRate", from: 1, to: 5 }], note: "Passive: critical rate +1 → +5%"
+    },
+    "critical-shot": {
+      name: "Critical Shot", maxLevel: 15, jobs: ["archer", "hunter", "crossbowman"],
+      effects: [{ stat: "critRate", from: 5, to: 20 }, { stat: "critDmg", from: 1, to: 15 }],
+      note: "Passive: +5 → +20% crit rate, +1 → +15% crit damage"
+    },
+    "critical-throw": {
+      name: "Critical Throw", maxLevel: 30, jobs: ["assassin", "bandit"],
+      effects: [{ stat: "critDmg", from: 5, to: 35 }, { stat: "critRate", from: 1, to: 15 }],
+      note: "Passive: critical damage +5 → +35%, rate +1 → +15%"
+    },
+    "crossbow-mastery": {
+      name: "Crossbow Mastery", maxLevel: 20, jobs: ["crossbowman"],
+      effects: [{ stat: "critDmg", from: 1, to: 20 }], note: "Passive: critical damage +1 → +20%"
+    },
+    "dagger-mastery": {
+      name: "Dagger Mastery", maxLevel: 20, jobs: ["rogue", "bandit"],
+      effects: [{ stat: "critRate", from: 1, to: 20 }], note: "Passive: critical rate +1 → +20%"
+    },
+    "blunt-mastery": {
+      name: "Blunt Weapon Mastery", maxLevel: 20, jobs: ["page"],
+      effects: [{ stat: "critDmg", from: 1, to: 20 }], note: "Passive: critical damage +1 → +20%"
+    }
+  };
+
+  function buffValue(def, eff, lv) {
+    const L = Math.max(1, Math.min(def.maxLevel, lv));
+    if (def.maxLevel <= 1) return eff.to;
+    return eff.from + (eff.to - eff.from) * (L - 1) / (def.maxLevel - 1);
+  }
+
+  function buffsFor(classId, jobId) {
+    return Object.keys(BUFFS).filter(k => {
+      const j = BUFFS[k].jobs || [];
+      return j.indexOf("all") >= 0 || j.indexOf(jobId) >= 0 || j.indexOf(classId) >= 0;
+    });
+  }
+
+  /* levels = { buffId: level }; 0 or missing = inactive */
+  function applyBuffs(C, levels) {
+    const out = Object.assign({}, C);
+    const applied = [];
+    Object.keys(levels || {}).forEach(id => {
+      const def = BUFFS[id], lv = levels[id];
+      if (!def || !lv || lv <= 0) return;
+      def.effects.forEach(e => {
+        const v = buffValue(def, e, lv);
+        out[e.stat] = (out[e.stat] || 0) + v;
+        if (e.stat === "critRate") out.critRate = Math.min(100, out.critRate);
+        applied.push({ id, name: def.name, stat: e.stat, value: v, level: lv });
+      });
+    });
+    return { C: out, applied };
+  }
+
   const api = {
-    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS, JOB_WEAPON,
+    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS, JOB_WEAPON, BUFFS,
+    buffValue, buffsFor, applyBuffs,
     classById, jobById, weaponsFor, skillsFor,
     mastery, magicTotal, rawRange, impliedPct, elementMult, levelScale, applyTarget,
     skillAt, atLevel, evaluate, analyze, compare, rankMobs, selfCheck

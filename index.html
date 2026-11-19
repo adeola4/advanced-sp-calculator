@@ -100,6 +100,11 @@
       <div class="f"><label>Stat-window MAX</label><input id="obsMax" type="number" value="0"></div>
     </div>
     <div class="note" id="rangeOut"></div>
+    <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+      <button id="importBtn" style="width:auto">📷 Read stat window</button>
+      <input id="shot" type="file" accept="image/*" style="display:none">
+    </div>
+    <div class="mini" id="importNote">Screenshot your stat window and this reads STR / DEX / INT / LUK / LUK / W.ATK / MATK and your damage range, then fills the fields. Fix anything OCR gets wrong.</div>
   </section>
 
   <section class="panel">
@@ -150,7 +155,15 @@
 <section style="margin-top:18px" id="verdictWrap"></section>
 <div class="cards" id="cards"></div>
 
-<section class="panel">
+<section class="panel" style="margin-top:16px">
+  <h2>Buffs — what you have vs what a party hands you</h2>
+  <div id="buffTiles" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px"></div>
+  <div class="note" id="buffNote"></div>
+  <h3>At a glance on this monster</h3>
+  <div class="scroll"><table id="buffTable"></table></div>
+</section>
+
+<section class="panel" style="margin-top:16px">
   <h2>Every monster in your level window, ranked by EXP/min for your best skill</h2>
   <div class="scroll"><table id="bestTable"></table></div>
   <div class="note" id="bestNote"></div>
@@ -673,8 +686,86 @@
     });
   }
 
+
+  /* --- buffs that change damage -------------------------------------------
+     Meditation and Rage are party-wide in MSCW; the rest are your own passives.
+     Values are the skill database's Lv1 -> max line, interpolated per level. */
+  const BUFFS = {
+    rage: {
+      name: "Rage", party: true, maxLevel: 30, jobs: ["warrior", "fighter", "page", "spearman"],
+      effects: [{ stat: "A", from: 10, to: 40 }],
+      note: "Attack Power +10 → +40, party-wide"
+    },
+    meditation: {
+      name: "Meditation", party: true, maxLevel: 20, jobs: ["magician", "fp", "il", "cleric"],
+      effects: [{ stat: "MATK", from: 5, to: 25 }],
+      note: "Party Magic Attack +5 → +25"
+    },
+    "claw-mastery": {
+      name: "Claw Mastery", maxLevel: 20, jobs: ["assassin"],
+      effects: [{ stat: "A", from: 1, to: 20 }], note: "Passive: Attack Power +1 → +20"
+    },
+    "precise-strikes": {
+      name: "Precise Strikes", maxLevel: 15, jobs: ["warrior", "fighter", "page", "spearman"],
+      effects: [{ stat: "critRate", from: 1, to: 5 }], note: "Passive: critical rate +1 → +5%"
+    },
+    "critical-shot": {
+      name: "Critical Shot", maxLevel: 15, jobs: ["archer", "hunter", "crossbowman"],
+      effects: [{ stat: "critRate", from: 5, to: 20 }, { stat: "critDmg", from: 1, to: 15 }],
+      note: "Passive: +5 → +20% crit rate, +1 → +15% crit damage"
+    },
+    "critical-throw": {
+      name: "Critical Throw", maxLevel: 30, jobs: ["assassin", "bandit"],
+      effects: [{ stat: "critDmg", from: 5, to: 35 }, { stat: "critRate", from: 1, to: 15 }],
+      note: "Passive: critical damage +5 → +35%, rate +1 → +15%"
+    },
+    "crossbow-mastery": {
+      name: "Crossbow Mastery", maxLevel: 20, jobs: ["crossbowman"],
+      effects: [{ stat: "critDmg", from: 1, to: 20 }], note: "Passive: critical damage +1 → +20%"
+    },
+    "dagger-mastery": {
+      name: "Dagger Mastery", maxLevel: 20, jobs: ["rogue", "bandit"],
+      effects: [{ stat: "critRate", from: 1, to: 20 }], note: "Passive: critical rate +1 → +20%"
+    },
+    "blunt-mastery": {
+      name: "Blunt Weapon Mastery", maxLevel: 20, jobs: ["page"],
+      effects: [{ stat: "critDmg", from: 1, to: 20 }], note: "Passive: critical damage +1 → +20%"
+    }
+  };
+
+  function buffValue(def, eff, lv) {
+    const L = Math.max(1, Math.min(def.maxLevel, lv));
+    if (def.maxLevel <= 1) return eff.to;
+    return eff.from + (eff.to - eff.from) * (L - 1) / (def.maxLevel - 1);
+  }
+
+  function buffsFor(classId, jobId) {
+    return Object.keys(BUFFS).filter(k => {
+      const j = BUFFS[k].jobs || [];
+      return j.indexOf("all") >= 0 || j.indexOf(jobId) >= 0 || j.indexOf(classId) >= 0;
+    });
+  }
+
+  /* levels = { buffId: level }; 0 or missing = inactive */
+  function applyBuffs(C, levels) {
+    const out = Object.assign({}, C);
+    const applied = [];
+    Object.keys(levels || {}).forEach(id => {
+      const def = BUFFS[id], lv = levels[id];
+      if (!def || !lv || lv <= 0) return;
+      def.effects.forEach(e => {
+        const v = buffValue(def, e, lv);
+        out[e.stat] = (out[e.stat] || 0) + v;
+        if (e.stat === "critRate") out.critRate = Math.min(100, out.critRate);
+        applied.push({ id, name: def.name, stat: e.stat, value: v, level: lv });
+      });
+    });
+    return { C: out, applied };
+  }
+
   const api = {
-    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS, JOB_WEAPON,
+    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS, JOB_WEAPON, BUFFS,
+    buffValue, buffsFor, applyBuffs,
     classById, jobById, weaponsFor, skillsFor,
     mastery, magicTotal, rawRange, impliedPct, elementMult, levelScale, applyTarget,
     skillAt, atLevel, evaluate, analyze, compare, rankMobs, selfCheck
@@ -746,7 +837,7 @@ function mob() {
 }
 
 function compute() {
-  const C = character();
+  const C = MSC.applyBuffs(character(), buffLevels()).C;
   const A = resolve('s1'), B = resolve('s2');
   const M = mob();
   const N = Math.max(1, num('nMobs'));
@@ -819,6 +910,30 @@ function compute() {
     </div>`;
   }).join('');
 
+  // --- what a party buff actually buys you
+  const baseC = character();
+  const scen = [
+    { label: 'Nobody buffs', levels: {} },
+    { label: 'My own levels', levels: buffLevels() },
+    { label: 'Party max', levels: partyMaxLevels() }
+  ];
+  let bh = `<thead><tr><th class="l">Scenario</th><th class="l">${A.name} damage</th><th>${A.name} EXP/min</th>
+    <th class="l">${B.name} damage</th><th>${B.name} EXP/min</th><th>Gain vs unbuffed</th></tr></thead><tbody>`;
+  let soloEp = null;
+  scen.forEach(s2 => {
+    const Cs = MSC.applyBuffs(baseC, s2.levels).C;
+    const ra = MSC.evaluate(Cs, A, M, N), rb = MSC.evaluate(Cs, B, M, N);
+    const bestEp = Math.max(ra.expPerMin, rb.expPerMin);
+    if (soloEp == null) soloEp = bestEp;
+    const gain = soloEp > 0 ? (bestEp / soloEp - 1) * 100 : 0;
+    bh += `<tr${s2.label === 'Party max' ? ' class="hl"' : ''}><td class="l">${s2.label}</td>
+      <td class="l dim">${fmt0(ra.hit.min)} – ${fmt0(ra.hit.max)}</td><td>${fmt0(ra.expPerMin)}</td>
+      <td class="l dim">${fmt0(rb.hit.min)} – ${fmt0(rb.hit.max)}</td><td>${fmt0(rb.expPerMin)}</td>
+      <td class="${gain > 0.5 ? 'ok' : 'dim'}">${gain > 0.5 ? '+' + gain.toFixed(1) + '%' : '—'}</td></tr>`;
+  });
+  bh += '</tbody>';
+  $('buffTable').innerHTML = bh;
+
   const rank = MSC.rankMobs(C, [A, B], { up: 8, down: 12, n: N });
   let h = `<thead><tr><th class="l">Monster</th><th>Lv</th><th>HP</th><th>P.DEF</th><th>EXP</th>
     <th class="l">Elements</th><th>Casts</th><th>Kill time</th><th>EXP/min</th><th>MP/kill</th><th class="l">Use</th></tr></thead><tbody>`;
@@ -863,6 +978,46 @@ function loadMob() {
   });
 }
 
+const BUFF_STATE = {};
+function buffLevels() {
+  const out = {};
+  Object.keys(MSC.BUFFS).forEach(id => { if (BUFF_STATE[id]) out[id] = BUFF_STATE[id]; });
+  return out;
+}
+function partyMaxLevels() {
+  const out = buffLevels();
+  Object.keys(MSC.BUFFS).forEach(id => { if (MSC.BUFFS[id].party) out[id] = MSC.BUFFS[id].maxLevel; });
+  return out;
+}
+function renderBuffs() {
+  const classId = $('klass').value, jobId = $('job').value;
+  const ids = MSC.buffsFor(classId, jobId);
+  $('buffTiles').innerHTML = ids.length ? ids.map(id => {
+    const b = MSC.BUFFS[id], v = BUFF_STATE[id] || 0;
+    return `<div class="card" style="padding:10px 12px">
+      <div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline">
+        <b>${b.name}</b><span class="tag">${b.party ? 'party' : 'passive'}</span></div>
+      <div class="mini" style="margin:2px 0 6px">${b.note} · max ${b.maxLevel}</div>
+      <div class="f" style="grid-template-columns:1fr 78px;margin:0">
+        <label>Level (0 = off)</label>
+        <input id="buf_${id}" type="number" min="0" max="${b.maxLevel}" value="${v}">
+      </div></div>`;
+  }).join('') : '<div class="mini">This job has no damage-changing buff at launch.</div>';
+  ids.forEach(id => {
+    const el = $('buf_' + id);
+    const h = () => {
+      const b = MSC.BUFFS[id];
+      BUFF_STATE[id] = Math.max(0, Math.min(b.maxLevel, parseFloat(el.value) || 0));
+      compute();
+    };
+    el.addEventListener('input', h); el.addEventListener('change', h);
+  });
+  const party = Object.keys(MSC.BUFFS).filter(k => MSC.BUFFS[k].party && ids.indexOf(k) >= 0);
+  $('buffNote').innerHTML = party.length
+    ? `Party buffs here: <b>${party.map(k => MSC.BUFFS[k].name).join(', ')}</b>. "Party max" below assumes someone in your party has it maxed, which is what you actually get if your own copy is low or unlearned.`
+    : 'This job\'s own buffs are passives — you always have them at whatever level you raised.';
+}
+
 function syncClass(keepWeapon) {
   const classId = $('klass').value, jobId = $('job').value;
   const klass = MSC.classById(classId).klass;
@@ -895,6 +1050,7 @@ function syncClass(keepWeapon) {
   const jobName = MSC.jobById(classId, jobId).name;
   $('whoOut').innerHTML = `<b>${MSC.classById(classId).name}</b> · ${jobName} — ${klass === 'magic' ? 'INT × MATK' : wi.primary + ' × ' + wi.name}`;
   renderBars();
+  renderBuffs();
   compute();
 }
 
@@ -920,9 +1076,87 @@ mobSel.addEventListener('change', () => { loadMob(); compute(); });
   el.addEventListener('change', handler);
   el.addEventListener('input', handler);
 });
+/* --- read a stat-window screenshot ---------------------------------------- */
+function loadTesseract() {
+  return new Promise((res, rej) => {
+    if (window.Tesseract) return res();
+    const s = document.createElement('script');
+    s.src = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.0/dist/tesseract.min.js';
+    s.onload = res; s.onerror = () => rej(new Error('OCR library blocked'));
+    document.head.appendChild(s);
+  });
+}
+function parseStatWindow(text) {
+  const t = (text || '').toUpperCase();
+  const grab = patterns => {
+    for (const re of patterns) {
+      const m = t.match(re);
+      if (m) { const v = parseInt(m[1].replace(/[^0-9]/g, ''), 10); if (!isNaN(v)) return v; }
+    }
+    return null;
+  };
+  const out = {};
+  out.STR = grab([/S\s?T\s?R\s*[:.=]?\s*(\d{1,4})/, /STRENGTH\D{0,6}(\d{1,4})/]);
+  out.DEX = grab([/D\s?E\s?X\s*[:.=]?\s*(\d{1,4})/, /DEXTERITY\D{0,6}(\d{1,4})/]);
+  out.INT = grab([/I\s?N\s?T\s*[:.=]?\s*(\d{1,4})/, /INTELLIGENCE\D{0,6}(\d{1,4})/]);
+  out.LUK = grab([/L\s?U\s?K\s*[:.=]?\s*(\d{1,4})/, /LUCK\D{0,6}(\d{1,4})/]);
+  out.WATK = grab([/W\s?\.?\s?ATK\D{0,6}(\d{1,4})/, /ATTACK\D{0,8}(\d{1,4})/, /W\.?ATK\s*(\d{1,4})/]);
+  out.MATK = grab([/M\s?\.?\s?ATK\D{0,6}(\d{1,4})/, /MAGIC ATTACK\D{0,8}(\d{1,4})/]);
+  const range = t.match(/(\d[\d,]{1,6})\s*[-~–—]\s*(\d[\d,]{1,6})/);
+  if (range) {
+    const lo = parseInt(range[1].replace(/[^0-9]/g, ''), 10);
+    const hi = parseInt(range[2].replace(/[^0-9]/g, ''), 10);
+    if (lo > 0 && hi > lo) { out.obsMin = lo; out.obsMax = hi; }
+  }
+  return out;
+}
+function statTargets() {
+  const magic = MSC.classById($('klass').value).klass === 'magic';
+  const tokens = t => ((t || '').toUpperCase().match(/(STR|DEX|INT|LUK)/g) || []);
+  return { magic, primary: tokens($('Plabel').textContent), secondary: tokens($('Qlabel').textContent) };
+}
+function applyImport(found) {
+  const seen = [];
+  const tgt = statTargets();
+  const put = (id, v, label) => { if (v != null) { $(id).value = v; seen.push(label + ' ' + v); } };
+  if (tgt.magic) {
+    put('INT', found.INT, 'INT');
+    put('MATK', found.MATK, 'MATK');
+  } else {
+    const pv = tgt.primary.map(t => found[t]).filter(v => v != null);
+    if (pv.length) put('P', pv[0], tgt.primary[0]);
+    const sv = tgt.secondary.map(t => found[t]).filter(v => v != null);
+    if (sv.length) put('Q', sv.reduce((a, b) => a + b, 0), tgt.secondary.join(' + '));
+  }
+  if (found.obsMin && found.obsMax) {
+    $('obsMin').value = found.obsMin; $('obsMax').value = found.obsMax;
+    $('mode').value = 'observed'; $('obsBlock').style.display = 'block';
+    $('magicBlock').style.display = 'none'; $('physBlock').style.display = 'none';
+    seen.push('damage range ' + found.obsMin + '–' + found.obsMax);
+  }
+  $('importNote').innerHTML = seen.length
+    ? `Read from your screenshot: <b>${seen.join(' · ')}</b>. Whatever it missed, type in.`
+    : 'Could not read that screenshot — crop it to just the stat window and try again, or type the numbers.';
+  compute();
+}
+$('importBtn').addEventListener('click', () => $('shot').click());
+$('shot').addEventListener('change', async ev => {
+  const file = ev.target.files && ev.target.files[0];
+  if (!file) return;
+  $('importNote').textContent = 'Reading your screenshot… (first run downloads the OCR engine)';
+  try {
+    await loadTesseract();
+    const res = await window.Tesseract.recognize(file, 'eng');
+    applyImport(parseStatWindow(res.data.text));
+  } catch (err) {
+    $('importNote').textContent = 'OCR failed: ' + err.message + ' — type the numbers instead.';
+  }
+});
+
 $('go').addEventListener('click', compute);
 loadMob();
 syncClass();
+renderBuffs();
 </script>
 </body>
 </html>

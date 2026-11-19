@@ -141,5 +141,44 @@ el('potPrice').value = '5000';
 el('potPrice').fire('input');
 check('potion cost appears in the card', /Meso \/ hour/.test(el('cards').innerHTML) && /[1-9]/.test(plain(el('cards').innerHTML).split('Meso / hour')[1].slice(0, 12)));
 
+// --- buffs: own levels vs party max
+clickClass('magician'); clickJob('fp');
+check('F/P buff tiles show Meditation', /Meditation/.test(el('buffTiles').innerHTML));
+check('Meditation is marked party', /party/.test(el('buffTiles').innerHTML));
+check('scenario table has 3 scenarios + header', (el('buffTable').innerHTML.match(/<tr/g) || []).length === 4, (el('buffTable').innerHTML.match(/<tr/g) || []).length + ' rows');
+const rowEpm = label => {
+  const row = el('buffTable').innerHTML.split('<tr').find(r => r.indexOf(label) >= 0) || '';
+  const cells = [...row.matchAll(/<td>([\d,]+)<\/td>/g)].map(m => +m[1].replace(/,/g, ''));
+  return cells.length ? Math.max.apply(null, cells) : 0;
+};
+el('mhp').value = '20000'; el('mhp').fire('input');
+const unbuffed = rowEpm('Nobody buffs'), partyMax = rowEpm('Party max');
+el('buf_meditation').value = '20'; el('buf_meditation').fire('input');
+const mine = rowEpm('My own levels');
+console.log('       meditation 20: unbuffed ' + unbuffed + ' / mine ' + mine + ' / party max ' + partyMax + ' EXP/min');
+check('party max beats unbuffed', partyMax > unbuffed);
+check('my own max matches party max', mine === partyMax);
+check('meditation lifts the damage range', /1,185/.test(el('buffTable').innerHTML), 'looking for 1,185');
+
+check('buffing lifts the verdict number', /Use Fire Arrow/.test(plain(el('verdictWrap').innerHTML)));
+check('gain column appears', /\+/.test(el('buffTable').innerHTML.split('Party max')[1] || ''));
+
+clickClass('warrior');
+check('warrior buff tiles show Rage', /Rage/.test(el('buffTiles').innerHTML));
+clickJob('spearman');
+check('Rage survives a job switch', /Rage/.test(el('buffTiles').innerHTML));
+
+// --- screenshot parser (runs without the OCR engine: feeds OCR-shaped text in)
+const parsed = sandbox.parseStatWindow('STR 132\nDEX 30\nINT 4\nLUK 4\nW.ATK 47\nDAMAGE 1,234 - 5,678');
+console.log('       parsed   : ' + JSON.stringify(parsed));
+check('parser reads STR/DEX/W.ATK', parsed.STR === 132 && parsed.DEX === 30 && parsed.WATK === 47);
+check('parser reads the damage range', parsed.obsMin === 1234 && parsed.obsMax === 5678);
+const parsedMage = sandbox.parseStatWindow('INT 300\nLUK 4\nM.ATK 105\nMagic Attack 105');
+check('parser reads MATK', parsedMage.MATK === 105, JSON.stringify(parsedMage));
+sandbox.applyImport(parsed);
+check('import fills the right stat field for the job', String(el('P').value) === '132' || String(el('P').value) === '132', 'P=' + el('P').value + ' Q=' + el('Q').value);
+check('import switches to observed mode', el('mode').value === 'observed');
+check('import reports what it read', /Read from your screenshot/.test(el('importNote').innerHTML));
+
 console.log(fails === 0 ? '\nUI SMOKE TEST PASSED' : `\n${fails} UI CHECK(S) FAILED`);
 process.exit(fails === 0 ? 0 : 1);
