@@ -104,7 +104,7 @@
       <button id="importBtn" style="width:auto">📷 Read stat window</button>
       <input id="shot" type="file" accept="image/*" style="display:none">
     </div>
-    <div class="mini" id="importNote">Screenshot your stat window and this reads STR / DEX / INT / LUK / LUK / W.ATK / MATK and your damage range, then fills the fields. Fix anything OCR gets wrong.</div>
+    <div class="mini" id="importNote">Screenshot your stat window and this reads STR / DEX / INT / LUK / W.ATK / MATK and your damage range, then fills the fields. Fix anything OCR gets wrong.</div>
   </section>
 
   <section class="panel">
@@ -495,22 +495,30 @@ function loadTesseract() {
     document.head.appendChild(s);
   });
 }
+function ocrNum(raw) {
+  if (raw == null) return null;
+  const s = String(raw).replace(/[^0-9a-zA-Z]/g, '')
+    .replace(/[aA]/g, '4').replace(/[oOQ]/g, '0').replace(/[lIi|]/g, '1')
+    .replace(/[sS]/g, '5').replace(/[bB]/g, '8').replace(/[zZ]/g, '2')
+    .replace(/[gG]/g, '6').replace(/[tT]/g, '7').replace(/[dD]/g, '0');
+  return /^[0-9]{1,6}$/.test(s) ? parseInt(s, 10) : null;
+}
 function parseStatWindow(text) {
   const t = (text || '').toUpperCase();
   const grab = patterns => {
     for (const re of patterns) {
       const m = t.match(re);
-      if (m) { const v = parseInt(m[1].replace(/[^0-9]/g, ''), 10); if (!isNaN(v)) return v; }
+      if (m) { const v = ocrNum(m[1]); if (v != null) return v; }
     }
     return null;
   };
   const out = {};
-  out.STR = grab([/S\s?T\s?R\s*[:.=]?\s*(\d{1,4})/, /STRENGTH\D{0,6}(\d{1,4})/]);
-  out.DEX = grab([/D\s?E\s?X\s*[:.=]?\s*(\d{1,4})/, /DEXTERITY\D{0,6}(\d{1,4})/]);
-  out.INT = grab([/I\s?N\s?T\s*[:.=]?\s*(\d{1,4})/, /INTELLIGENCE\D{0,6}(\d{1,4})/]);
-  out.LUK = grab([/L\s?U\s?K\s*[:.=]?\s*(\d{1,4})/, /LUCK\D{0,6}(\d{1,4})/]);
-  out.WATK = grab([/W\s?\.?\s?ATK\D{0,6}(\d{1,4})/, /ATTACK\D{0,8}(\d{1,4})/, /W\.?ATK\s*(\d{1,4})/]);
-  out.MATK = grab([/M\s?\.?\s?ATK\D{0,6}(\d{1,4})/, /MAGIC ATTACK\D{0,8}(\d{1,4})/]);
+  out.STR = grab([/S\s?T\s?R\s*[:.=]?\s*([0-9A-Z]{1,6})/, /STRENGTH\D{0,6}([0-9A-Z]{1,6})/]);
+  out.DEX = grab([/D\s?E\s?X\s*[:.=]?\s*([0-9A-Z]{1,6})/, /DEXTERITY\D{0,6}([0-9A-Z]{1,6})/]);
+  out.INT = grab([/I\s?N\s?T\s*[:.=]?\s*([0-9A-Z]{1,6})/, /INTELLIGENCE\D{0,6}([0-9A-Z]{1,6})/]);
+  out.LUK = grab([/L\s?U\s?K\s*[:.=]?\s*([0-9A-Z]{1,6})/, /LUCK\D{0,6}([0-9A-Z]{1,6})/]);
+  out.WATK = grab([/W\s?\.?\s?ATK\s*[:.=]?\s*([0-9A-Z]{1,6})/, /W\s?\.?\s?ATT\s*[:.=]?\s*([0-9A-Z]{1,6})/, /ATTACK\D{0,8}([0-9A-Z]{1,6})/]);
+  out.MATK = grab([/M\s?\.?\s?ATK\s*[:.=]?\s*([0-9A-Z]{1,6})/, /MAGIC\s?ATTACK\D{0,8}([0-9A-Z]{1,6})/]);
   const range = t.match(/(\d[\d,]{1,6})\s*[-~–—]\s*(\d[\d,]{1,6})/);
   if (range) {
     const lo = parseInt(range[1].replace(/[^0-9]/g, ''), 10);

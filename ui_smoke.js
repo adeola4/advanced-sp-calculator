@@ -175,6 +175,8 @@ check('parser reads STR/DEX/W.ATK', parsed.STR === 132 && parsed.DEX === 30 && p
 check('parser reads the damage range', parsed.obsMin === 1234 && parsed.obsMax === 5678);
 const parsedMage = sandbox.parseStatWindow('INT 300\nLUK 4\nM.ATK 105\nMagic Attack 105');
 check('parser reads MATK', parsedMage.MATK === 105, JSON.stringify(parsedMage));
+const noisy = sandbox.parseStatWindow('STR 132\nDEX 3O\nW.ATK a7\n1O,OOO - 12,345');
+check('parser survives OCR digit noise (a7 -> 47, 3O -> 30)', noisy.WATK === 47 && noisy.DEX === 30, JSON.stringify(noisy));
 sandbox.applyImport(parsed);
 check('import fills the right stat field for the job', String(el('P').value) === '132' || String(el('P').value) === '132', 'P=' + el('P').value + ' Q=' + el('Q').value);
 check('import switches to observed mode', el('mode').value === 'observed');
