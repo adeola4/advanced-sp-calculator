@@ -162,5 +162,39 @@ console.log(`${sc.pass ? 'PASS' : 'FAIL'}  core self-check (${sc.cases.length} d
 sc.cases.filter(c => !c.pass).forEach(c => console.log('        mismatch:', JSON.stringify(c)));
 if (!sc.pass) fails++;
 
+// --- anchor 10: magic MIN/MAX read off the MSCW damage calculator, one probe at a time
+const mageOf = (o) => Object.assign({ lv: 50, mode: 'stats', klass: 'magic', ML: 0, critRate: 0, critDmg: 0 }, o);
+const fa180 = { pct: 180 };
+eq('magic INT250 MATK0 mastery 0', (r => [r.min, r.max])(MSC.rawRange(fa180, mageOf({ INT: 250, MATK: 0 }))), [256, 675]);
+eq('magic INT250 MATK100 mastery 10', (r => [r.min, r.max])(MSC.rawRange(Object.assign({ spellMastery: 10 }, fa180), mageOf({ INT: 250, MATK: 100 }))), [1028, 1215]);
+eq('magic INT125 MATK100 mastery 0', (r => [r.min, r.max])(MSC.rawRange(fa180, mageOf({ INT: 125, MATK: 100 }))), [312, 583]);
+eq('magic INT400 MATK100 mastery 0', (r => [r.min, r.max])(MSC.rawRange(fa180, mageOf({ INT: 400, MATK: 100 }))), [660, 2268]);
+eq('magic Poison Breath 90% scales linearly', (r => [r.min, r.max])(MSC.rawRange({ pct: 90 }, mageOf({ INT: 400, MATK: 100 }))), [330, 1134]);
+
+// --- anchor 11: physical MIN probes (mastery lifts only the minimum)
+const px = (o) => Object.assign({ lv: 50, mode: 'stats', klass: 'physical', P: 180, Q: 60, WATK: 70, A: 0, W: 2.5, critRate: 0, critDmg: 0 }, o);
+eq('physical mastery 0 MIN', (r => [r.min, r.max])(MSC.rawRange({ pct: 240 }, px({ ML: 0 }))), [288, 1024]);
+eq('physical mastery 5 MIN', (r => [r.min, r.max])(MSC.rawRange({ pct: 240 }, px({ ML: 5 }))), [552, 1024]);
+eq('physical mastery 10 MIN', (r => [r.min, r.max])(MSC.rawRange({ pct: 240 }, px({ ML: 10 }))), [817, 1024]);
+eq('physical primary 60 / secondary 60 block', (r => [r.min, r.max])(MSC.rawRange({ pct: 240 }, px({ ML: 10, P: 60, Q: 60 }))), [429, 520]);
+eq('physical secondary 200 block', (r => [r.min, r.max])(MSC.rawRange({ pct: 240 }, px({ ML: 10, Q: 200 }))), [1052, 1260]);
+
+// --- anchor 12: weapon multipliers read off the MSCW calculator, one weapon at a time
+const W = {};
+MSC.WEAPON_LIST.forEach(w => { W[w.id] = w.w; });
+eq('weapon multipliers', [W.sword1h, W.sword2h, W.axe2h, W.spear, W.polearm, W.bow, W.crossbow, W.claw, W.dagger], [1.8, 2.5, 2.6, 2.3, 2.7, 2.5, 2.5, 3.0, 2.0]);
+
+// --- anchor 13: class structure — every job resolves to a real skill pair
+let badJobs = [];
+MSC.CLASSES.forEach(c => c.jobs.forEach(j => {
+  const pair = MSC.JOB_DEFAULTS[j.id];
+  if (!pair || !MSC.SKILLS[pair[0]] || !MSC.SKILLS[pair[1]]) badJobs.push(j.id);
+  if (MSC.skillsFor(c.id, j.id).length < (j.id === 'beginner' ? 1 : 2)) badJobs.push(j.id + '(no skills)');
+  if (!MSC.weaponsFor(c.id, j.id).length) badJobs.push(j.id + '(no weapon)');
+}));
+eq('every job has a default pair, skills and a weapon', badJobs, []);
+eq('savage blow gains hits with level', [MSC.skillAt('savage-blow', 1).hits, MSC.skillAt('savage-blow', 30).hits], [4, 6]);
+eq('fire arrow is F/P only', MSC.skillsFor('magician', 'il').indexOf('fire-arrow'), -1);
+
 console.log(fails === 0 ? '\nALL CHECKS PASSED' : `\n${fails} CHECK(S) FAILED`);
 process.exit(fails === 0 ? 0 : 1);

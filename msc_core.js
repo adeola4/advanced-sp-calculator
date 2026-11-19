@@ -132,7 +132,8 @@
       name: def.name, klass: def.klass, element: def.element,
       level: L, pct: atLevel(def.pct, L, def.maxLevel),
       mp: atLevel(def.mp, L, def.maxLevel),
-      hits: def.hits || 1, targets: def.targets || 1,
+      hits: def.hitsByLevel ? Math.round(atLevel(def.hitsByLevel, L, def.maxLevel)) : (def.hits || 1),
+      targets: def.targets || 1,
       spellMastery: masteryByLevel,
       dotPct: def.dotPct ? atLevel(def.dotPct, L, def.maxLevel) : 0,
       dotSec: def.dotSec || 0,
@@ -368,8 +369,132 @@
     return { cases, pass: cases.every(c => c.pass) };
   }
 
+
+  /* --- class / subclass structure (MSCW launch: Beginner + 4 branches) ----- */
+  const CLASSES = [
+    { id: "beginner", name: "Beginner", klass: "physical", jobs: [{ id: "beginner", name: "Beginner" }] },
+    { id: "warrior", name: "Warrior", klass: "physical", jobs: [
+      { id: "warrior", name: "Warrior" }, { id: "fighter", name: "Fighter" },
+      { id: "page", name: "Page" }, { id: "spearman", name: "Spearman" }] },
+    { id: "magician", name: "Magician", klass: "magic", jobs: [
+      { id: "magician", name: "Magician" }, { id: "fp", name: "F/P Wizard" },
+      { id: "il", name: "I/L Wizard" }, { id: "cleric", name: "Cleric" }] },
+    { id: "bowman", name: "Bowman", klass: "physical", jobs: [
+      { id: "archer", name: "Archer" }, { id: "hunter", name: "Hunter" },
+      { id: "crossbowman", name: "Crossbowman" }] },
+    { id: "thief", name: "Thief", klass: "physical", jobs: [
+      { id: "rogue", name: "Rogue" }, { id: "assassin", name: "Assassin" },
+      { id: "bandit", name: "Bandit" }] }
+  ];
+
+  /* Weapon action multipliers read one at a time off the MSCW damage calculator.
+     MSCW uses a single mixed-action average per weapon - there is no swing/stab split. */
+  const WEAPON_LIST = [
+    { id: "sword1h", name: "One-Handed Sword", w: 1.8, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "fighter", "page"] },
+    { id: "sword2h", name: "Two-Handed Sword", w: 2.5, primary: "STR", secondary: "DEX", classes: ["warrior", "fighter", "page"] },
+    { id: "axe1h", name: "One-Handed Axe", w: 1.92, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "fighter", "page"] },
+    { id: "axe2h", name: "Two-Handed Axe", w: 2.6, primary: "STR", secondary: "DEX", classes: ["warrior", "fighter", "spearman"] },
+    { id: "blunt1h", name: "One-Handed Blunt", w: 1.92, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "page"] },
+    { id: "blunt2h", name: "Two-Handed Blunt", w: 2.6, primary: "STR", secondary: "DEX", classes: ["warrior", "page"] },
+    { id: "spear", name: "Spear", w: 2.3, primary: "STR", secondary: "DEX", classes: ["warrior", "spearman"] },
+    { id: "polearm", name: "Polearm", w: 2.7, primary: "STR", secondary: "DEX", classes: ["warrior", "spearman"] },
+    { id: "bow", name: "Bow", w: 2.5, primary: "DEX", secondary: "STR", classes: ["archer", "hunter"] },
+    { id: "crossbow", name: "Crossbow", w: 2.5, primary: "DEX", secondary: "STR", classes: ["archer", "crossbowman"] },
+    { id: "claw", name: "Claw", w: 3.0, primary: "LUK", secondary: "STR + DEX", classes: ["rogue", "assassin"] },
+    { id: "dagger", name: "Dagger", w: 2.0, primary: "LUK", secondary: "STR + DEX", classes: ["rogue", "bandit"] },
+    { id: "wand", name: "Wand / Staff", w: 0, primary: "INT", secondary: "MATK", magic: true, classes: ["magician", "fp", "il", "cleric"] }
+  ];
+
+  /* attack skills that are not in the base library above.
+     Values are the MSCW skill database's Lv1 -> max line; MP is per cast. */
+  const MORE_SKILLS = {
+    regular: { name: "Regular attack", klass: "physical", element: "neutral", maxLevel: 1, hits: 1, targets: 1,
+      pct: [100, 100], mp: [0, 0], interpolated: false, source: "MSCW: unskilled weapon swing, 100%" },
+    rush: { name: "Rush", klass: "physical", element: "neutral", maxLevel: 20, hits: 1, targets: 6,
+      pct: [60, 80], mp: [35, 15], interpolated: true, source: "MSCW skill DB: 60-80% on 6 targets, MP 35-15" },
+    "arrow-blow": { name: "Arrow Blow", klass: "physical", element: "neutral", maxLevel: 20, hits: 1, targets: 1,
+      pct: [160, 240], mp: [6, 14], interpolated: true, source: "MSCW skill DB: 160-240%, MP 6-14" },
+    "double-shot": { name: "Double Shot", klass: "physical", element: "neutral", maxLevel: 20, hits: 2, targets: 2,
+      pct: [80, 120], mp: [8, 16], interpolated: true,
+      source: "MSCW skill DB: two shots, 80-120% each, 'up to 2 targets', MP 8-16" },
+    "arrow-bomb": { name: "Arrow Bomb", klass: "physical", element: "neutral", maxLevel: 30, hits: 1, targets: 6,
+      pct: [70, 130], mp: [14, 28], interpolated: true, source: "MSCW skill DB: 70-130% on 6 targets, MP 14-28" },
+    "iron-arrow": { name: "Iron Arrow", klass: "physical", element: "neutral", maxLevel: 30, hits: 1, targets: 6,
+      pct: [120, 180], mp: [14, 28], interpolated: true, source: "MSCW skill DB: 120-180% on 6 targets, MP 14-28" },
+    "cold-beam": { name: "Cold Beam", klass: "magic", element: "ice", maxLevel: 30, hits: 1, targets: 1,
+      pct: [110, 170], mp: [11, 22], interpolated: true, source: "MSCW skill DB: 110-170%, MP 11-22" },
+    "thunder-bolt": { name: "Thunder Bolt", klass: "magic", element: "lightning", maxLevel: 30, hits: 1, targets: 6,
+      pct: [50, 80], mp: [20, 40], interpolated: true, source: "MSCW skill DB: 50-80% on 6 targets, MP 20-40" },
+    "holy-arrow": { name: "Holy Arrow", klass: "magic", element: "holy", maxLevel: 30, hits: 1, targets: 1,
+      pct: [100, 160], mp: [14, 28], interpolated: true, source: "MSCW skill DB: 100-160%, MP 14-28" },
+    "lucky-seven": { name: "Lucky Seven", klass: "physical", element: "neutral", maxLevel: 20, hits: 2, targets: 1,
+      pct: [60, 140], mp: [8, 16], interpolated: true, source: "MSCW skill DB: 60-140% per star, MP 8-16" },
+    "double-stab": { name: "Double Stab", klass: "physical", element: "neutral", maxLevel: 20, hits: 2, targets: 1,
+      pct: [80, 160], mp: [8, 16], interpolated: true, source: "MSCW skill DB: 80-160% per stab, MP 8-16" },
+    "savage-blow": { name: "Savage Blow", klass: "physical", element: "neutral", maxLevel: 30, hits: 6, targets: 1,
+      hitsByLevel: [4, 6], pct: [65, 75], mp: [14, 28], interpolated: true,
+      source: "MSCW skill DB: 4 hits at Lv1 rising to 6 hits, 65-75% per hit, MP 14-28" },
+    drain: { name: "Drain", klass: "physical", element: "neutral", maxLevel: 30, hits: 1, targets: 1,
+      pct: [180, 240], mp: [14, 28], interpolated: true, source: "MSCW skill DB: 180-240%, MP 14-28" }
+  };
+
+  const SKILL_JOBS = {
+    regular: ["all"],
+    "power-strike": ["warrior", "fighter", "page", "spearman"],
+    "slash-blast": ["warrior", "fighter", "page", "spearman"],
+    rush: ["fighter", "page", "spearman"],
+    "arrow-blow": ["archer", "hunter", "crossbowman"],
+    "double-shot": ["archer", "hunter", "crossbowman"],
+    "arrow-bomb": ["hunter"],
+    "iron-arrow": ["crossbowman"],
+    "energy-bolt": ["magician", "fp", "il", "cleric"],
+    "magic-claw": ["magician", "fp", "il", "cleric"],
+    "fire-arrow": ["fp"],
+    "poison-breath": ["fp"],
+    "cold-beam": ["il"],
+    "thunder-bolt": ["il"],
+    "holy-arrow": ["cleric"],
+    "lucky-seven": ["rogue", "assassin", "bandit"],
+    "double-stab": ["rogue", "bandit"],
+    "savage-blow": ["bandit"],
+    drain: ["assassin"]
+  };
+
+  /* the pair each job actually trains with: [1v1 skill, mobbing skill] */
+  const JOB_DEFAULTS = {
+    beginner: ["regular", "regular"],
+    warrior: ["power-strike", "slash-blast"], fighter: ["power-strike", "rush"],
+    page: ["power-strike", "rush"], spearman: ["power-strike", "rush"],
+    magician: ["energy-bolt", "magic-claw"], fp: ["fire-arrow", "poison-breath"],
+    il: ["cold-beam", "thunder-bolt"], cleric: ["holy-arrow", "magic-claw"],
+    archer: ["arrow-blow", "double-shot"], hunter: ["arrow-bomb", "arrow-blow"],
+    crossbowman: ["iron-arrow", "arrow-blow"],
+    rogue: ["lucky-seven", "double-stab"], assassin: ["drain", "lucky-seven"],
+    bandit: ["savage-blow", "double-stab"]
+  };
+
+  Object.assign(SKILLS, MORE_SKILLS);
+  Object.keys(SKILL_JOBS).forEach(k => { if (SKILLS[k]) SKILLS[k].jobs = SKILL_JOBS[k]; });
+
+  function classById(id) { return CLASSES.find(c => c.id === id) || CLASSES[0]; }
+  function jobById(classId, jobId) {
+    const c = classById(classId);
+    return c.jobs.find(j => j.id === jobId) || c.jobs[0];
+  }
+  function weaponsFor(classId, jobId) {
+    return WEAPON_LIST.filter(w => w.classes.indexOf(jobId) >= 0 || w.classes.indexOf(classId) >= 0);
+  }
+  /* skills available to a job: its own, its class's 1st-job skills, and universal ones */
+  function skillsFor(classId, jobId) {
+    return Object.keys(SKILLS).filter(k => {
+      const j = SKILLS[k].jobs || [];
+      return j.indexOf("all") >= 0 || j.indexOf(jobId) >= 0 || j.indexOf(classId) >= 0;
+    });
+  }
+
   const api = {
-    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT,
+    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS,
+    classById, jobById, weaponsFor, skillsFor,
     mastery, magicTotal, rawRange, impliedPct, elementMult, levelScale, applyTarget,
     skillAt, atLevel, evaluate, analyze, compare, rankMobs, selfCheck
   };

@@ -16,6 +16,12 @@
   h1{font-size:18px;margin:0 0 4px}
   header p{margin:0;color:var(--dim);font-size:12.5px}
   main{padding:18px 22px 60px;max-width:1480px;margin:0 auto}
+  .classbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+  .classbar button{padding:9px 16px;font-size:13.5px;border-radius:8px}
+  .classbar button.on{background:#2b6c92;border-color:var(--accent);color:#fff;box-shadow:0 0 0 1px var(--accent) inset}
+  .jobbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+  .jobbar button{padding:5px 11px;font-size:12px;font-weight:500;background:var(--panel);border-radius:99px}
+  .jobbar button.on{background:#243b52;border-color:var(--accent);color:#d6ecff}
   .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;align-items:start}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 14px 16px}
   .panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin:0 0 12px;font-weight:600}
@@ -60,12 +66,15 @@
 </header>
 <main>
 
+<div class="classbar" id="classBar"></div>
+<div class="jobbar" id="jobBar"></div>
+<input type="hidden" id="klass" value="magician">
+<input type="hidden" id="job" value="fp">
+
 <div class="row">
   <section class="panel">
     <h2>1 · Character</h2>
-    <div class="f"><label>Class branch</label>
-      <select id="klass"><option value="magic">Magician (INT × MATK)</option><option value="physical">Warrior/Bowman/Thief</option></select>
-    </div>
+    <div class="mini" id="whoOut" style="margin:0 0 8px"></div>
     <div class="f"><label>Level</label><input id="plv" type="number" value="40" min="1" max="200"></div>
     <div class="f"><label>Damage source</label>
       <select id="mode"><option value="stats">Stats → MSCW formula</option><option value="observed">Observed stat-window range</option></select>
@@ -73,21 +82,15 @@
     <div id="magicBlock">
       <div class="f"><label>Total INT</label><input id="INT" type="number" value="300"></div>
       <div class="f"><label>Total Magic Attack (gear + buffs)</label><input id="MATK" type="number" value="100"></div>
+      <div class="f"><label>Spell mastery level (0–10)</label><input id="spML" type="number" value="10" min="0" max="10"></div>
     </div>
     <div id="physBlock" style="display:none">
-      <div class="f"><label>Primary stat</label><input id="P" type="number" value="132"></div>
-      <div class="f"><label>Secondary stat</label><input id="Q" type="number" value="30"></div>
+      <div class="f"><label id="Plabel">Primary stat (STR)</label><input id="P" type="number" value="132"></div>
+      <div class="f"><label id="Qlabel">Secondary stat (DEX)</label><input id="Q" type="number" value="30"></div>
       <div class="f"><label>Total W.ATK</label><input id="WATK" type="number" value="47"></div>
       <div class="f"><label>Attack Power buff (A)</label><input id="AP" type="number" value="0"></div>
       <div class="f"><label>Weapon mastery level (0–10)</label><input id="ML" type="number" value="0" min="0" max="10"></div>
-      <div class="f"><label>Weapon action</label>
-        <select id="W">
-          <option value="1.8">1H Sword 1.8</option><option value="2.5">2H Sword 2.5</option>
-          <option value="1.92">1H Axe/Blunt 1.92</option><option value="2.6">2H Axe/Blunt 2.60</option>
-          <option value="2.3">Spear 2.30</option><option value="2.7">Polearm 2.70</option>
-          <option value="1.4">Dagger 1.40</option><option value="2.5">Bow/Crossbow/Claw 2.5</option>
-        </select>
-      </div>
+      <div class="f"><label>Weapon</label><select id="W"></select></div>
     </div>
     <div class="f"><label>Crit rate % (base 5)</label><input id="critRate" type="number" value="5" step="0.1"></div>
     <div class="f"><label>Crit damage % (base 20)</label><input id="critDmg" type="number" value="20" step="0.1"></div>
@@ -302,7 +305,8 @@
       name: def.name, klass: def.klass, element: def.element,
       level: L, pct: atLevel(def.pct, L, def.maxLevel),
       mp: atLevel(def.mp, L, def.maxLevel),
-      hits: def.hits || 1, targets: def.targets || 1,
+      hits: def.hitsByLevel ? Math.round(atLevel(def.hitsByLevel, L, def.maxLevel)) : (def.hits || 1),
+      targets: def.targets || 1,
       spellMastery: masteryByLevel,
       dotPct: def.dotPct ? atLevel(def.dotPct, L, def.maxLevel) : 0,
       dotSec: def.dotSec || 0,
@@ -538,8 +542,132 @@
     return { cases, pass: cases.every(c => c.pass) };
   }
 
+
+  /* --- class / subclass structure (MSCW launch: Beginner + 4 branches) ----- */
+  const CLASSES = [
+    { id: "beginner", name: "Beginner", klass: "physical", jobs: [{ id: "beginner", name: "Beginner" }] },
+    { id: "warrior", name: "Warrior", klass: "physical", jobs: [
+      { id: "warrior", name: "Warrior" }, { id: "fighter", name: "Fighter" },
+      { id: "page", name: "Page" }, { id: "spearman", name: "Spearman" }] },
+    { id: "magician", name: "Magician", klass: "magic", jobs: [
+      { id: "magician", name: "Magician" }, { id: "fp", name: "F/P Wizard" },
+      { id: "il", name: "I/L Wizard" }, { id: "cleric", name: "Cleric" }] },
+    { id: "bowman", name: "Bowman", klass: "physical", jobs: [
+      { id: "archer", name: "Archer" }, { id: "hunter", name: "Hunter" },
+      { id: "crossbowman", name: "Crossbowman" }] },
+    { id: "thief", name: "Thief", klass: "physical", jobs: [
+      { id: "rogue", name: "Rogue" }, { id: "assassin", name: "Assassin" },
+      { id: "bandit", name: "Bandit" }] }
+  ];
+
+  /* Weapon action multipliers read one at a time off the MSCW damage calculator.
+     MSCW uses a single mixed-action average per weapon - there is no swing/stab split. */
+  const WEAPON_LIST = [
+    { id: "sword1h", name: "One-Handed Sword", w: 1.8, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "fighter", "page"] },
+    { id: "sword2h", name: "Two-Handed Sword", w: 2.5, primary: "STR", secondary: "DEX", classes: ["warrior", "fighter", "page"] },
+    { id: "axe1h", name: "One-Handed Axe", w: 1.92, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "fighter", "page"] },
+    { id: "axe2h", name: "Two-Handed Axe", w: 2.6, primary: "STR", secondary: "DEX", classes: ["warrior", "fighter", "spearman"] },
+    { id: "blunt1h", name: "One-Handed Blunt", w: 1.92, primary: "STR", secondary: "DEX", classes: ["beginner", "warrior", "page"] },
+    { id: "blunt2h", name: "Two-Handed Blunt", w: 2.6, primary: "STR", secondary: "DEX", classes: ["warrior", "page"] },
+    { id: "spear", name: "Spear", w: 2.3, primary: "STR", secondary: "DEX", classes: ["warrior", "spearman"] },
+    { id: "polearm", name: "Polearm", w: 2.7, primary: "STR", secondary: "DEX", classes: ["warrior", "spearman"] },
+    { id: "bow", name: "Bow", w: 2.5, primary: "DEX", secondary: "STR", classes: ["archer", "hunter"] },
+    { id: "crossbow", name: "Crossbow", w: 2.5, primary: "DEX", secondary: "STR", classes: ["archer", "crossbowman"] },
+    { id: "claw", name: "Claw", w: 3.0, primary: "LUK", secondary: "STR + DEX", classes: ["rogue", "assassin"] },
+    { id: "dagger", name: "Dagger", w: 2.0, primary: "LUK", secondary: "STR + DEX", classes: ["rogue", "bandit"] },
+    { id: "wand", name: "Wand / Staff", w: 0, primary: "INT", secondary: "MATK", magic: true, classes: ["magician", "fp", "il", "cleric"] }
+  ];
+
+  /* attack skills that are not in the base library above.
+     Values are the MSCW skill database's Lv1 -> max line; MP is per cast. */
+  const MORE_SKILLS = {
+    regular: { name: "Regular attack", klass: "physical", element: "neutral", maxLevel: 1, hits: 1, targets: 1,
+      pct: [100, 100], mp: [0, 0], interpolated: false, source: "MSCW: unskilled weapon swing, 100%" },
+    rush: { name: "Rush", klass: "physical", element: "neutral", maxLevel: 20, hits: 1, targets: 6,
+      pct: [60, 80], mp: [35, 15], interpolated: true, source: "MSCW skill DB: 60-80% on 6 targets, MP 35-15" },
+    "arrow-blow": { name: "Arrow Blow", klass: "physical", element: "neutral", maxLevel: 20, hits: 1, targets: 1,
+      pct: [160, 240], mp: [6, 14], interpolated: true, source: "MSCW skill DB: 160-240%, MP 6-14" },
+    "double-shot": { name: "Double Shot", klass: "physical", element: "neutral", maxLevel: 20, hits: 2, targets: 2,
+      pct: [80, 120], mp: [8, 16], interpolated: true,
+      source: "MSCW skill DB: two shots, 80-120% each, 'up to 2 targets', MP 8-16" },
+    "arrow-bomb": { name: "Arrow Bomb", klass: "physical", element: "neutral", maxLevel: 30, hits: 1, targets: 6,
+      pct: [70, 130], mp: [14, 28], interpolated: true, source: "MSCW skill DB: 70-130% on 6 targets, MP 14-28" },
+    "iron-arrow": { name: "Iron Arrow", klass: "physical", element: "neutral", maxLevel: 30, hits: 1, targets: 6,
+      pct: [120, 180], mp: [14, 28], interpolated: true, source: "MSCW skill DB: 120-180% on 6 targets, MP 14-28" },
+    "cold-beam": { name: "Cold Beam", klass: "magic", element: "ice", maxLevel: 30, hits: 1, targets: 1,
+      pct: [110, 170], mp: [11, 22], interpolated: true, source: "MSCW skill DB: 110-170%, MP 11-22" },
+    "thunder-bolt": { name: "Thunder Bolt", klass: "magic", element: "lightning", maxLevel: 30, hits: 1, targets: 6,
+      pct: [50, 80], mp: [20, 40], interpolated: true, source: "MSCW skill DB: 50-80% on 6 targets, MP 20-40" },
+    "holy-arrow": { name: "Holy Arrow", klass: "magic", element: "holy", maxLevel: 30, hits: 1, targets: 1,
+      pct: [100, 160], mp: [14, 28], interpolated: true, source: "MSCW skill DB: 100-160%, MP 14-28" },
+    "lucky-seven": { name: "Lucky Seven", klass: "physical", element: "neutral", maxLevel: 20, hits: 2, targets: 1,
+      pct: [60, 140], mp: [8, 16], interpolated: true, source: "MSCW skill DB: 60-140% per star, MP 8-16" },
+    "double-stab": { name: "Double Stab", klass: "physical", element: "neutral", maxLevel: 20, hits: 2, targets: 1,
+      pct: [80, 160], mp: [8, 16], interpolated: true, source: "MSCW skill DB: 80-160% per stab, MP 8-16" },
+    "savage-blow": { name: "Savage Blow", klass: "physical", element: "neutral", maxLevel: 30, hits: 6, targets: 1,
+      hitsByLevel: [4, 6], pct: [65, 75], mp: [14, 28], interpolated: true,
+      source: "MSCW skill DB: 4 hits at Lv1 rising to 6 hits, 65-75% per hit, MP 14-28" },
+    drain: { name: "Drain", klass: "physical", element: "neutral", maxLevel: 30, hits: 1, targets: 1,
+      pct: [180, 240], mp: [14, 28], interpolated: true, source: "MSCW skill DB: 180-240%, MP 14-28" }
+  };
+
+  const SKILL_JOBS = {
+    regular: ["all"],
+    "power-strike": ["warrior", "fighter", "page", "spearman"],
+    "slash-blast": ["warrior", "fighter", "page", "spearman"],
+    rush: ["fighter", "page", "spearman"],
+    "arrow-blow": ["archer", "hunter", "crossbowman"],
+    "double-shot": ["archer", "hunter", "crossbowman"],
+    "arrow-bomb": ["hunter"],
+    "iron-arrow": ["crossbowman"],
+    "energy-bolt": ["magician", "fp", "il", "cleric"],
+    "magic-claw": ["magician", "fp", "il", "cleric"],
+    "fire-arrow": ["fp"],
+    "poison-breath": ["fp"],
+    "cold-beam": ["il"],
+    "thunder-bolt": ["il"],
+    "holy-arrow": ["cleric"],
+    "lucky-seven": ["rogue", "assassin", "bandit"],
+    "double-stab": ["rogue", "bandit"],
+    "savage-blow": ["bandit"],
+    drain: ["assassin"]
+  };
+
+  /* the pair each job actually trains with: [1v1 skill, mobbing skill] */
+  const JOB_DEFAULTS = {
+    beginner: ["regular", "regular"],
+    warrior: ["power-strike", "slash-blast"], fighter: ["power-strike", "rush"],
+    page: ["power-strike", "rush"], spearman: ["power-strike", "rush"],
+    magician: ["energy-bolt", "magic-claw"], fp: ["fire-arrow", "poison-breath"],
+    il: ["cold-beam", "thunder-bolt"], cleric: ["holy-arrow", "magic-claw"],
+    archer: ["arrow-blow", "double-shot"], hunter: ["arrow-bomb", "arrow-blow"],
+    crossbowman: ["iron-arrow", "arrow-blow"],
+    rogue: ["lucky-seven", "double-stab"], assassin: ["drain", "lucky-seven"],
+    bandit: ["savage-blow", "double-stab"]
+  };
+
+  Object.assign(SKILLS, MORE_SKILLS);
+  Object.keys(SKILL_JOBS).forEach(k => { if (SKILLS[k]) SKILLS[k].jobs = SKILL_JOBS[k]; });
+
+  function classById(id) { return CLASSES.find(c => c.id === id) || CLASSES[0]; }
+  function jobById(classId, jobId) {
+    const c = classById(classId);
+    return c.jobs.find(j => j.id === jobId) || c.jobs[0];
+  }
+  function weaponsFor(classId, jobId) {
+    return WEAPON_LIST.filter(w => w.classes.indexOf(jobId) >= 0 || w.classes.indexOf(classId) >= 0);
+  }
+  /* skills available to a job: its own, its class's 1st-job skills, and universal ones */
+  function skillsFor(classId, jobId) {
+    return Object.keys(SKILLS).filter(k => {
+      const j = SKILLS[k].jobs || [];
+      return j.indexOf("all") >= 0 || j.indexOf(jobId) >= 0 || j.indexOf(classId) >= 0;
+    });
+  }
+
   const api = {
-    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT,
+    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS,
+    classById, jobById, weaponsFor, skillsFor,
     mastery, magicTotal, rawRange, impliedPct, elementMult, levelScale, applyTarget,
     skillAt, atLevel, evaluate, analyze, compare, rankMobs, selfCheck
   };
@@ -554,17 +682,39 @@ const num = id => parseFloat($(id).value) || 0;
 const fmt0 = n => Math.round(n).toLocaleString();
 const fmt = n => (Math.round(n * 10) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 });
 
-function fillSkillSelect(sel, klass) {
-  const keys = Object.keys(MSC.SKILLS).filter(k => MSC.SKILLS[k].klass === klass);
-  sel.innerHTML = keys.map(k => `<option value="${k}">${MSC.SKILLS[k].name} — ${MSC.SKILLS[k].element}, ${MSC.SKILLS[k].maxLevel} lv</option>`).join('');
+const STATS = {
+  beginner: { P: 40, Q: 4, WATK: 10, INT: 20, MATK: 5, ms: 810 },
+  warrior: { P: 132, Q: 30, WATK: 47, ms: 720 },
+  magician: { INT: 300, MATK: 100, ms: 810 },
+  bowman: { P: 180, Q: 60, WATK: 70, ms: 720 },
+  thief: { P: 180, Q: 60, WATK: 45, ms: 660 }
+};
+
+function renderBars() {
+  $('classBar').innerHTML = MSC.CLASSES.map(c =>
+    `<button data-class="${c.id}" class="${c.id === $('klass').value ? 'on' : ''}">${c.name}</button>`).join('');
+  const cur = MSC.classById($('klass').value);
+  $('jobBar').innerHTML = cur.jobs.map(j =>
+    `<button data-job="${j.id}" class="${j.id === $('job').value ? 'on' : ''}">${j.name}</button>`).join('');
+  [...document.querySelectorAll('#classBar button')].forEach(b => b.addEventListener('click', () => selectClass(b.getAttribute('data-class'))));
+  [...document.querySelectorAll('#jobBar button')].forEach(b => b.addEventListener('click', () => selectJob(b.getAttribute('data-job'))));
 }
-function defaultPair(klass) {
-  return klass === 'magic' ? ['fire-arrow', 'poison-breath'] : ['power-strike', 'slash-blast'];
+function selectClass(id) {
+  const c = MSC.classById(id);
+  $('klass').value = id;
+  $('job').value = c.jobs[0].id;
+  const st = STATS[id] || STATS.warrior;
+  if (st.INT != null) $('INT').value = st.INT;
+  if (st.MATK != null) $('MATK').value = st.MATK;
+  if (st.P != null) { $('P').value = st.P; $('Q').value = st.Q; $('WATK').value = st.WATK; }
+  if (st.ms) { $('s1ms').value = st.ms; $('s2ms').value = st.ms; }
+  syncClass();
 }
+function selectJob(id) { $('job').value = id; syncClass(); }
 
 function character() {
   return {
-    klass: $('klass').value, lv: num('plv'), mode: $('mode').value,
+    klass: MSC.classById($('klass').value).klass, job: $('job').value, lv: num('plv'), mode: $('mode').value,
     INT: num('INT'), MATK: num('MATK'),
     P: num('P'), Q: num('Q'), WATK: num('WATK'), A: num('AP'), ML: num('ML'), W: parseFloat($('W').value) || 0,
     critRate: num('critRate'), critDmg: num('critDmg'),
@@ -573,6 +723,7 @@ function character() {
 }
 function resolve(prefix) {
   const sk = MSC.skillAt($(prefix + 'id').value, num(prefix + 'lv'), { ms: num(prefix + 'ms') || 810 });
+  if (sk.klass === 'magic' && $('spML').value !== '') sk.spellMastery = Math.max(0, Math.min(10, num('spML')));
   sk.obsMin = num(prefix + 'obsMin');
   sk.obsMax = num(prefix + 'obsMax');
   return sk;
@@ -701,21 +852,39 @@ function loadMob() {
 }
 
 function syncClass() {
-  const klass = $('klass').value;
+  const classId = $('klass').value, jobId = $('job').value;
+  const klass = MSC.classById(classId).klass;
   const obs = $('mode').value === 'observed';
   $('magicBlock').style.display = (!obs && klass === 'magic') ? 'block' : 'none';
   $('physBlock').style.display = (!obs && klass === 'physical') ? 'block' : 'none';
-  fillSkillSelect($('s1id'), klass); fillSkillSelect($('s2id'), klass);
-  const pair = defaultPair(klass);
+
+  const wl = MSC.weaponsFor(classId, jobId);
+  const prev = $('W').value;
+  $('W').innerHTML = wl.map(w => `<option value="${w.w}" data-id="${w.id}">${w.name} ×${w.w}</option>`).join('');
+  $('W').value = wl.some(w => String(w.w) === prev) ? prev : String(wl[0].w);
+  const wi = wl[Math.max(0, wl.findIndex(w => String(w.w) === $('W').value))] || wl[0];
+  $('W').setAttribute('data-primary', wi.primary); $('W').setAttribute('data-secondary', wi.secondary);
+  $('Plabel').textContent = wi.primary + ' (primary)';
+  $('Qlabel').textContent = wi.secondary + ' (secondary)';
+
+  const ids = MSC.skillsFor(classId, jobId);
+  const opts = ids.map(k => {
+    const d = MSC.SKILLS[k];
+    const bits = [d.name, d.element !== 'neutral' ? d.element : null, d.targets > 1 ? d.targets + ' targets' : null].filter(Boolean);
+    return `<option value="${k}">${bits.join(' · ')}</option>`;
+  }).join('');
+  $('s1id').innerHTML = opts; $('s2id').innerHTML = opts;
+  const pair = MSC.JOB_DEFAULTS[jobId] || MSC.JOB_DEFAULTS[classId] || ids.slice(0, 2);
   $('s1id').value = pair[0]; $('s2id').value = pair[1];
   $('s1lv').max = MSC.SKILLS[pair[0]].maxLevel; $('s2lv').max = MSC.SKILLS[pair[1]].maxLevel;
   $('s1lv').value = MSC.SKILLS[pair[0]].maxLevel; $('s2lv').value = MSC.SKILLS[pair[1]].maxLevel;
-  const ms = klass === 'magic' ? 810 : 720;
-  $('s1ms').value = ms; $('s2ms').value = ms;
+  const jobName = MSC.jobById(classId, jobId).name;
+  $('whoOut').innerHTML = `<b>${MSC.classById(classId).name}</b> · ${jobName} — ${klass === 'magic' ? 'INT × MATK' : wi.primary + ' × ' + wi.name}`;
+  renderBars();
   compute();
 }
 
-$('klass').addEventListener('change', syncClass);
+$('W').addEventListener('change', syncClass);
 $('mode').addEventListener('change', () => {
   const obs = $('mode').value === 'observed';
   $('obsBlock').style.display = obs ? 'block' : 'none';
@@ -725,7 +894,7 @@ $('mode').addEventListener('change', () => {
   compute();
 });
 mobSel.addEventListener('change', () => { loadMob(); compute(); });
-['plv','INT','MATK','P','Q','WATK','AP','ML','W','critRate','critDmg','obsMin','obsMax',
+['plv','INT','MATK','spML','P','Q','WATK','AP','ML','critRate','critDmg','obsMin','obsMax',
  's1id','s1lv','s1ms','s1obsMin','s1obsMax','s2id','s2lv','s2ms','s2obsMin','s2obsMax',
  'mlv','mhp','mdef','mexp','nMobs','eFire','ePoison','eIce','eLightning','potPrice','potMP'].forEach(id => {
   const el = $(id);

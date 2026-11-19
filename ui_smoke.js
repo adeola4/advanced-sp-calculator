@@ -22,19 +22,55 @@ function el(id) {
   if (els[id]) return els[id];
   return (els[id] = {
     id, value: defaults[id] !== undefined ? defaults[id] : '',
-    textContent: '', innerHTML: '', max: 30, style: {},
+    textContent: '', innerHTML: '', max: 30, style: {}, _attrs: {},
     selectedOptions: [{ textContent: 'Curse Eye' }],
     _l: {},
     addEventListener(ev, fn) { (this._l[ev] = this._l[ev] || []).push(fn); },
-    fire(ev) { (this._l[ev] || []).forEach(f => f()); }
+    fire(ev) { (this._l[ev] || []).forEach(f => f()); },
+    setAttribute(k, v) { this._attrs[k] = String(v); },
+    getAttribute(k) { return this._attrs[k] === undefined ? null : this._attrs[k]; }
   });
 }
-const document = { getElementById: el, querySelector: () => null, readyState: 'complete' };
+
+// '#host button' -> buttons parsed out of the host's innerHTML, cached so listeners stick
+function buttonsIn(hostId) {
+  const host = el(hostId);
+  if (host._btnCache && host._btnCacheHtml === host.innerHTML) return host._btnCache;
+  const out = [];
+  for (const tag of host.innerHTML.match(/<button[^>]*>/g) || []) {
+    const attrs = {};
+    for (const a of tag.matchAll(/([\w-]+)="([^"]*)"/g)) attrs[a[1]] = a[2];
+    out.push({
+      _l: {}, _attrs: attrs,
+      getAttribute(k) { return this._attrs[k] === undefined ? null : this._attrs[k]; },
+      get textContent() { return this._attrs['data-class'] || this._attrs['data-job'] || ''; },
+      addEventListener(ev, fn) { (this._l[ev] = this._l[ev] || []).push(fn); },
+      click() { (this._l.click || []).forEach(f => f()); }
+    });
+  }
+  host._btnCache = out; host._btnCacheHtml = host.innerHTML;
+  return out;
+}
+
+const document = {
+  getElementById: el,
+  querySelector: () => null,
+  querySelectorAll(sel) {
+    const m = /^#(\w+) button$/.exec(sel);
+    return m ? buttonsIn(m[1]) : [];
+  },
+  readyState: 'complete'
+};
 const sandbox = { document, window: {}, console, Math, parseFloat, isFinite, String, Number, Object, Array, JSON, MSC };
 vm.createContext(sandbox);
 
 let fails = 0;
 const check = (name, ok, extra) => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'}  ${name}${extra ? ' — ' + extra : ''}`); };
+const plain = s => (s || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+const rows = id => (el(id).innerHTML.match(/<tr/g) || []).length;
+const clickClass = id => buttonsIn('classBar').find(b => b.getAttribute('data-class') === id).click();
+const clickJob = id => buttonsIn('jobBar').find(b => b.getAttribute('data-job') === id).click();
+const optionIds = id => [...el(id).innerHTML.matchAll(/<option value="([^"]+)"/g)].map(m => m[1]);
 
 try {
   vm.runInContext(inline, sandbox, { filename: 'app_inline.js' });
@@ -44,14 +80,14 @@ try {
   process.exit(1);
 }
 
-const plain = s => (s || '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
-const rows = id => (el(id).innerHTML.match(/<tr/g) || []).length;
-
-const verdict = plain(el('verdictWrap').innerHTML);
+let verdict = plain(el('verdictWrap').innerHTML);
 console.log('       verdict  : ' + verdict.slice(0, 150));
 console.log('       skillA   : ' + plain(el('s1info').innerHTML));
 console.log('       skillB   : ' + plain(el('s2info').innerHTML));
 
+check('five class buttons rendered', buttonsIn('classBar').length === 5);
+check('magician jobs listed', buttonsIn('jobBar').length === 4);
+check('default class is Magician / F-P Wizard', el('klass').value === 'magician' && el('job').value === 'fp');
 check('default pair is Fire Arrow vs Poison Breath', /Fire Arrow/.test(el('s1head').textContent) && /Poison Breath/.test(el('s2head').textContent));
 check('verdict recommends Fire Arrow on Curse Eye (poison resist)', /Use Fire Arrow on Curse Eye/.test(verdict), verdict.slice(0, 60));
 check('poison resistance is called out', /resists poison|blocked/.test(verdict));
@@ -62,26 +98,48 @@ check('verification table has 10 anchors + header', rows('checkTable') === 11, r
 check('all anchors match', /All anchors match/.test(el('checkNote').innerHTML));
 
 // six monsters in range must flip the recommendation to the 6-target skill
-el('nMobs').value = '6';
-el('nMobs').fire('input');
+el('nMobs').value = '6'; el('nMobs').fire('input');
 const v6 = plain(el('verdictWrap').innerHTML);
 console.log('       at 6 mobs: ' + v6.slice(0, 130));
 check('6 monsters flips to Poison Breath', /Use Poison Breath/.test(v6));
-
-// switching to the physical branch rebuilds the skill list and re-renders
 el('nMobs').value = '1'; el('nMobs').fire('input');
-el('klass').value = 'physical';
-el('klass').fire('change');
-const vP = plain(el('verdictWrap').innerHTML);
-console.log('       physical : ' + vP.slice(0, 130));
-check('physical branch renders a verdict', vP.length > 40 && /Power Strike|Slash Blast/.test(vP));
-check('physical branch hides magic inputs', el('magicBlock').style.display === 'none');
+
+// class buttons re-scope stats, weapons and the skill list
+clickClass('warrior');
+verdict = plain(el('verdictWrap').innerHTML);
+console.log('       warrior  : ' + verdict.slice(0, 130));
+check('warrior class switches to physical stats', el('physBlock').style.display === 'block' && el('magicBlock').style.display === 'none');
+check('warrior default pair is Power Strike vs Slash Blast', /power-strike/.test(el('s1id').value) && /slash-blast/.test(el('s2id').value));
+check('warrior weapon list is melee only', optionIds('W').includes('2.7') && optionIds('W').includes('1.8'), optionIds('W').join(','));
+check('warrior skill list excludes magician skills', !optionIds('s1id').includes('fire-arrow'), optionIds('s1id').join(','));
+check('warrior jobs rendered', buttonsIn('jobBar').length === 4);
+
+clickJob('spearman');
+check('spearman adds spear/polearm weapons', /Spear/.test(el('W').innerHTML) && /Polearm/.test(el('W').innerHTML));
+check('spearman offers Rush as the mobbing skill', /rush/.test(el('s2id').value), el('s2id').value);
+check('secondary label follows the weapon', /DEX/.test(el('Qlabel').textContent), el('Qlabel').textContent);
+
+clickClass('thief');
+check('thief uses LUK primary', /LUK/.test(el('Plabel').textContent), el('Plabel').textContent);
+check('thief secondary reads STR + DEX', /STR \+ DEX/.test(el('Qlabel').textContent), el('Qlabel').textContent);
+check('thief default pair is Lucky Seven vs Double Stab', el('s1id').value === 'lucky-seven' && el('s2id').value === 'double-stab');
+clickJob('assassin');
+check('assassin claw multiplier is 3.0', el('W').value === '3', el('W').value);
+
+clickClass('bowman');
+check('bowman default pair is Arrow Blow vs Double Shot', el('s1id').value === 'arrow-blow' && el('s2id').value === 'double-shot');
+clickJob('crossbowman');
+check('crossbowman offers Iron Arrow', optionIds('s2id').includes('iron-arrow'), optionIds('s2id').join(','));
+
+clickClass('magician'); clickJob('fp');
+check('back to F/P restores Fire Arrow', el('s1id').value === 'fire-arrow');
+check('spell mastery input is live', el('spML').value === '10');
 
 // potion bill: mesos/hour appears once a potion is priced
 el('potMP').value = '100';
 el('potPrice').value = '5000';
 el('potPrice').fire('input');
-check('potion cost appears in the card', /Meso \/ hour/.test(el('cards').innerHTML) && /[1-9]/.test(plain(el('cards').innerHTML).split('Meso / hour')[1].slice(0, 12)), plain(el('cards').innerHTML).split('Meso / hour')[1]?.slice(0, 12));
+check('potion cost appears in the card', /Meso \/ hour/.test(el('cards').innerHTML) && /[1-9]/.test(plain(el('cards').innerHTML).split('Meso / hour')[1].slice(0, 12)));
 
 console.log(fails === 0 ? '\nUI SMOKE TEST PASSED' : `\n${fails} UI CHECK(S) FAILED`);
 process.exit(fails === 0 ? 0 : 1);

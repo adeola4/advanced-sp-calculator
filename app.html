@@ -16,6 +16,12 @@
   h1{font-size:18px;margin:0 0 4px}
   header p{margin:0;color:var(--dim);font-size:12.5px}
   main{padding:18px 22px 60px;max-width:1480px;margin:0 auto}
+  .classbar{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 8px}
+  .classbar button{padding:9px 16px;font-size:13.5px;border-radius:8px}
+  .classbar button.on{background:#2b6c92;border-color:var(--accent);color:#fff;box-shadow:0 0 0 1px var(--accent) inset}
+  .jobbar{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 16px}
+  .jobbar button{padding:5px 11px;font-size:12px;font-weight:500;background:var(--panel);border-radius:99px}
+  .jobbar button.on{background:#243b52;border-color:var(--accent);color:#d6ecff}
   .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;align-items:start}
   .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 14px 16px}
   .panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin:0 0 12px;font-weight:600}
@@ -60,12 +66,15 @@
 </header>
 <main>
 
+<div class="classbar" id="classBar"></div>
+<div class="jobbar" id="jobBar"></div>
+<input type="hidden" id="klass" value="magician">
+<input type="hidden" id="job" value="fp">
+
 <div class="row">
   <section class="panel">
     <h2>1 · Character</h2>
-    <div class="f"><label>Class branch</label>
-      <select id="klass"><option value="magic">Magician (INT × MATK)</option><option value="physical">Warrior/Bowman/Thief</option></select>
-    </div>
+    <div class="mini" id="whoOut" style="margin:0 0 8px"></div>
     <div class="f"><label>Level</label><input id="plv" type="number" value="40" min="1" max="200"></div>
     <div class="f"><label>Damage source</label>
       <select id="mode"><option value="stats">Stats → MSCW formula</option><option value="observed">Observed stat-window range</option></select>
@@ -73,21 +82,15 @@
     <div id="magicBlock">
       <div class="f"><label>Total INT</label><input id="INT" type="number" value="300"></div>
       <div class="f"><label>Total Magic Attack (gear + buffs)</label><input id="MATK" type="number" value="100"></div>
+      <div class="f"><label>Spell mastery level (0–10)</label><input id="spML" type="number" value="10" min="0" max="10"></div>
     </div>
     <div id="physBlock" style="display:none">
-      <div class="f"><label>Primary stat</label><input id="P" type="number" value="132"></div>
-      <div class="f"><label>Secondary stat</label><input id="Q" type="number" value="30"></div>
+      <div class="f"><label id="Plabel">Primary stat (STR)</label><input id="P" type="number" value="132"></div>
+      <div class="f"><label id="Qlabel">Secondary stat (DEX)</label><input id="Q" type="number" value="30"></div>
       <div class="f"><label>Total W.ATK</label><input id="WATK" type="number" value="47"></div>
       <div class="f"><label>Attack Power buff (A)</label><input id="AP" type="number" value="0"></div>
       <div class="f"><label>Weapon mastery level (0–10)</label><input id="ML" type="number" value="0" min="0" max="10"></div>
-      <div class="f"><label>Weapon action</label>
-        <select id="W">
-          <option value="1.8">1H Sword 1.8</option><option value="2.5">2H Sword 2.5</option>
-          <option value="1.92">1H Axe/Blunt 1.92</option><option value="2.6">2H Axe/Blunt 2.60</option>
-          <option value="2.3">Spear 2.30</option><option value="2.7">Polearm 2.70</option>
-          <option value="1.4">Dagger 1.40</option><option value="2.5">Bow/Crossbow/Claw 2.5</option>
-        </select>
-      </div>
+      <div class="f"><label>Weapon</label><select id="W"></select></div>
     </div>
     <div class="f"><label>Crit rate % (base 5)</label><input id="critRate" type="number" value="5" step="0.1"></div>
     <div class="f"><label>Crit damage % (base 20)</label><input id="critDmg" type="number" value="20" step="0.1"></div>
@@ -174,17 +177,39 @@ const num = id => parseFloat($(id).value) || 0;
 const fmt0 = n => Math.round(n).toLocaleString();
 const fmt = n => (Math.round(n * 10) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 });
 
-function fillSkillSelect(sel, klass) {
-  const keys = Object.keys(MSC.SKILLS).filter(k => MSC.SKILLS[k].klass === klass);
-  sel.innerHTML = keys.map(k => `<option value="${k}">${MSC.SKILLS[k].name} — ${MSC.SKILLS[k].element}, ${MSC.SKILLS[k].maxLevel} lv</option>`).join('');
+const STATS = {
+  beginner: { P: 40, Q: 4, WATK: 10, INT: 20, MATK: 5, ms: 810 },
+  warrior: { P: 132, Q: 30, WATK: 47, ms: 720 },
+  magician: { INT: 300, MATK: 100, ms: 810 },
+  bowman: { P: 180, Q: 60, WATK: 70, ms: 720 },
+  thief: { P: 180, Q: 60, WATK: 45, ms: 660 }
+};
+
+function renderBars() {
+  $('classBar').innerHTML = MSC.CLASSES.map(c =>
+    `<button data-class="${c.id}" class="${c.id === $('klass').value ? 'on' : ''}">${c.name}</button>`).join('');
+  const cur = MSC.classById($('klass').value);
+  $('jobBar').innerHTML = cur.jobs.map(j =>
+    `<button data-job="${j.id}" class="${j.id === $('job').value ? 'on' : ''}">${j.name}</button>`).join('');
+  [...document.querySelectorAll('#classBar button')].forEach(b => b.addEventListener('click', () => selectClass(b.getAttribute('data-class'))));
+  [...document.querySelectorAll('#jobBar button')].forEach(b => b.addEventListener('click', () => selectJob(b.getAttribute('data-job'))));
 }
-function defaultPair(klass) {
-  return klass === 'magic' ? ['fire-arrow', 'poison-breath'] : ['power-strike', 'slash-blast'];
+function selectClass(id) {
+  const c = MSC.classById(id);
+  $('klass').value = id;
+  $('job').value = c.jobs[0].id;
+  const st = STATS[id] || STATS.warrior;
+  if (st.INT != null) $('INT').value = st.INT;
+  if (st.MATK != null) $('MATK').value = st.MATK;
+  if (st.P != null) { $('P').value = st.P; $('Q').value = st.Q; $('WATK').value = st.WATK; }
+  if (st.ms) { $('s1ms').value = st.ms; $('s2ms').value = st.ms; }
+  syncClass();
 }
+function selectJob(id) { $('job').value = id; syncClass(); }
 
 function character() {
   return {
-    klass: $('klass').value, lv: num('plv'), mode: $('mode').value,
+    klass: MSC.classById($('klass').value).klass, job: $('job').value, lv: num('plv'), mode: $('mode').value,
     INT: num('INT'), MATK: num('MATK'),
     P: num('P'), Q: num('Q'), WATK: num('WATK'), A: num('AP'), ML: num('ML'), W: parseFloat($('W').value) || 0,
     critRate: num('critRate'), critDmg: num('critDmg'),
@@ -193,6 +218,7 @@ function character() {
 }
 function resolve(prefix) {
   const sk = MSC.skillAt($(prefix + 'id').value, num(prefix + 'lv'), { ms: num(prefix + 'ms') || 810 });
+  if (sk.klass === 'magic' && $('spML').value !== '') sk.spellMastery = Math.max(0, Math.min(10, num('spML')));
   sk.obsMin = num(prefix + 'obsMin');
   sk.obsMax = num(prefix + 'obsMax');
   return sk;
@@ -321,21 +347,39 @@ function loadMob() {
 }
 
 function syncClass() {
-  const klass = $('klass').value;
+  const classId = $('klass').value, jobId = $('job').value;
+  const klass = MSC.classById(classId).klass;
   const obs = $('mode').value === 'observed';
   $('magicBlock').style.display = (!obs && klass === 'magic') ? 'block' : 'none';
   $('physBlock').style.display = (!obs && klass === 'physical') ? 'block' : 'none';
-  fillSkillSelect($('s1id'), klass); fillSkillSelect($('s2id'), klass);
-  const pair = defaultPair(klass);
+
+  const wl = MSC.weaponsFor(classId, jobId);
+  const prev = $('W').value;
+  $('W').innerHTML = wl.map(w => `<option value="${w.w}" data-id="${w.id}">${w.name} ×${w.w}</option>`).join('');
+  $('W').value = wl.some(w => String(w.w) === prev) ? prev : String(wl[0].w);
+  const wi = wl[Math.max(0, wl.findIndex(w => String(w.w) === $('W').value))] || wl[0];
+  $('W').setAttribute('data-primary', wi.primary); $('W').setAttribute('data-secondary', wi.secondary);
+  $('Plabel').textContent = wi.primary + ' (primary)';
+  $('Qlabel').textContent = wi.secondary + ' (secondary)';
+
+  const ids = MSC.skillsFor(classId, jobId);
+  const opts = ids.map(k => {
+    const d = MSC.SKILLS[k];
+    const bits = [d.name, d.element !== 'neutral' ? d.element : null, d.targets > 1 ? d.targets + ' targets' : null].filter(Boolean);
+    return `<option value="${k}">${bits.join(' · ')}</option>`;
+  }).join('');
+  $('s1id').innerHTML = opts; $('s2id').innerHTML = opts;
+  const pair = MSC.JOB_DEFAULTS[jobId] || MSC.JOB_DEFAULTS[classId] || ids.slice(0, 2);
   $('s1id').value = pair[0]; $('s2id').value = pair[1];
   $('s1lv').max = MSC.SKILLS[pair[0]].maxLevel; $('s2lv').max = MSC.SKILLS[pair[1]].maxLevel;
   $('s1lv').value = MSC.SKILLS[pair[0]].maxLevel; $('s2lv').value = MSC.SKILLS[pair[1]].maxLevel;
-  const ms = klass === 'magic' ? 810 : 720;
-  $('s1ms').value = ms; $('s2ms').value = ms;
+  const jobName = MSC.jobById(classId, jobId).name;
+  $('whoOut').innerHTML = `<b>${MSC.classById(classId).name}</b> · ${jobName} — ${klass === 'magic' ? 'INT × MATK' : wi.primary + ' × ' + wi.name}`;
+  renderBars();
   compute();
 }
 
-$('klass').addEventListener('change', syncClass);
+$('W').addEventListener('change', syncClass);
 $('mode').addEventListener('change', () => {
   const obs = $('mode').value === 'observed';
   $('obsBlock').style.display = obs ? 'block' : 'none';
@@ -345,7 +389,7 @@ $('mode').addEventListener('change', () => {
   compute();
 });
 mobSel.addEventListener('change', () => { loadMob(); compute(); });
-['plv','INT','MATK','P','Q','WATK','AP','ML','W','critRate','critDmg','obsMin','obsMax',
+['plv','INT','MATK','spML','P','Q','WATK','AP','ML','critRate','critDmg','obsMin','obsMax',
  's1id','s1lv','s1ms','s1obsMin','s1obsMax','s2id','s2lv','s2ms','s2obsMin','s2obsMax',
  'mlv','mhp','mdef','mexp','nMobs','eFire','ePoison','eIce','eLightning','potPrice','potMP'].forEach(id => {
   const el = $(id);
