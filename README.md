@@ -2,12 +2,25 @@
 
 Live: https://advanced-sp-calculator.vercel.app
 
-A training calculator for **MapleStory Classic World (MSCW)** that answers two questions with
-arithmetic instead of vibes:
+A calculator for **MapleStory Classic World (MSCW)** that answers three questions with arithmetic
+instead of vibes:
 
-1. **What is my exact damage on this mob?** — full MSCW damage pipeline, per hit, per line.
-2. **When do I use my mob attack instead of my 1v1?** — the break-even mob count, plus a ranked
-   list of the mobs *your* current damage kills for the most EXP per minute.
+1. **What is my exact damage on this mob?** — full MSCW pipeline: physical and magic, per hit, per line.
+2. **Which of my two skills do I cast here?** — element multiplier, damage-over-time, target cap and
+   MP bill, compared per monster (the F/P wizard case: Fire Arrow vs Poison Breath).
+3. **What does it cost?** — MP per cast / per kill / per minute, potions per hour, mesos per hour.
+
+## F/P wizard example (the one that motivated the build)
+
+Fire Arrow Lv30: 180%, 28 MP, single target, fire, burns 50% of a basic attack over 3 s.
+Poison Breath Lv30: 90%, 40 MP, 6 targets, poison, 75% chance to poison for 40% over 5 s.
+
+- On **Curse Eye** (poison-resistant, neutral to fire): Fire Arrow wins 4,667 vs 1,556 EXP/min —
+  poison takes ×0.75 and **cannot poison a poison-resistant monster at all**, so Poison Breath loses
+  its DoT entirely.
+- On **Jr. Wraith** (fire-weak): Fire Arrow's burn also gets ×1.25.
+- With **6 monsters in range**: Poison Breath flips ahead, 9,333 vs 4,667 EXP/min at 20 MP per kill
+  instead of 28 — the target cap is the only reason to ever cast it on a poison-resistant mob.
 
 ## Why this is not just another MapleStory calculator
 
@@ -54,6 +67,16 @@ Any preset can be wrong at your skill level. So the app also accepts **observed 
 the min/max damage you actually see on a 0-defence monster and the model is pinned to your client.
 It back-solves what damage % your numbers imply (e.g. 1,110 max on the reference block → 260%).
 
+## Data provenance (MSCW only, never global MapleStory)
+
+- Skill damage %, MP cost, hit count, target cap, mastery level per level and DoT values are
+  transcribed from the MSCW skill database (Fire Arrow, Poison Breath, Power Strike, Slash Blast,
+  Magic Claw, Energy Bolt — level by level).
+- Monster HP / EXP / P.DEF and element states (fire weak, poison resist, poison immune, …) come from
+  the MSCW monster database.
+- Element multipliers: weak ×1.25, resist ×0.75, immune ×0. DoT ignores monster defence (MSCW rule)
+  and is blocked on a monster resistant to that element.
+
 ## The math behind the recommendation
 
 ```
@@ -74,6 +97,12 @@ its HP suggests, and overkill is wasted damage.
   in-game skill tooltip is the authority, or use calibration.
 - Mob table is a static starter set (Lv 1–80, bosses tagged); every field is editable.
 - Crit is modelled as an expected multiplier `(1 + rate × damage)`; it does not model crit streaks.
+- DoT is modelled as its quoted total ("50 Basic Attack over 3 sec" = 50% of your basic attack),
+  ignoring defence, multiplied by the element, applied once per cast at the quoted success rate.
+  Tick timing inside the 3/5 s window is not modelled.
+- Power Strike / Slash Blast / Magic Claw / Energy Bolt only have their Lv1 and max values published
+  in the source, so intermediate levels are linearly interpolated and flagged; Fire Arrow and
+  Poison Breath use exact per-level tables.
 
 ## Files
 

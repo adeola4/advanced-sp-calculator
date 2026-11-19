@@ -8,6 +8,12 @@ function ok(name, got, want, tol) {
   console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}: got ${got.toFixed(3)} want ${want}${tol ? ' ±' + tol : ''}`);
 }
 
+function eq(name, got, want) {
+  const pass = JSON.stringify(got) === JSON.stringify(want);
+  if (!pass) fails++;
+  console.log(`${pass ? 'PASS' : 'FAIL'}  ${name}: got ${JSON.stringify(got)} want ${JSON.stringify(want)}`);
+}
+
 // --- anchor 1: published level-30 warrior, clean Gladius (47 W.ATK), STR 132 / DEX 30, 1H sword 1.8, mastery 0
 const base = { lv: 30, mode: 'stats', P: 132, Q: 30, WATK: 47, A: 0, ML: 0, W: 1.8, critRate: 0, critDmg: 0 };
 const basic0 = MSC.rawRange(100, base);
@@ -46,8 +52,8 @@ if (!capped.capped) fails++;
 
 // --- crossover logic, worked by hand
 const S = {
-  one: { name: 'Power Strike', pct: 260, hits: 1, cap: 1, ms: 720 },
-  mob: { name: 'Slash Blast', pct: 130, hits: 1, cap: 6, ms: 720 }
+  one: MSC.skillAt('power-strike', 20, { ms: 720 }),
+  mob: MSC.skillAt('slash-blast', 20, { ms: 720 })
 };
 const a = MSC.analyze(mastered, S, curseEye, 1, 1);
 // per-target mobbing DPS = 130%/260% of 1v1 => break-even at 2 mobs
@@ -66,11 +72,51 @@ console.log(`${a3.needed === 1 ? 'PASS' : 'FAIL'}  weak 1v1 => break-even at 1 m
 if (a3.needed !== 1) fails++;
 
 // --- ranking sanity
-const rank = MSC.rankMobs(mastered, S, 1, { up: 8, down: 12 });
+const rank = MSC.rankMobs(mastered, [S.one, S.mob], { up: 8, down: 12 });
 const sorted = rank.every((m, i) => i === 0 || rank[i - 1].epm >= m.epm);
 console.log(`${sorted ? 'PASS' : 'FAIL'}  ranked ${rank.length} mobs, descending EXP/min`);
 if (!sorted) fails++;
-console.log(`       level-30 char, top 6: ` + rank.slice(0, 6).map(m => `${m.name} ${Math.round(m.epm)} exp/min`).join(' | '));
+console.log(`       level-30 char, top 5: ` + rank.slice(0, 5).map(m => `${m.name} ${Math.round(m.epm)} exp/min (${m.skill})`).join(' | '));
+
+// --- F/P wizard: Fire Arrow vs Poison Breath, elements, DoT and MP bill
+const mage = { lv: 40, mode: 'stats', klass: 'magic', INT: 300, MATK: 100, ML: 10, critRate: 0, critDmg: 0 };
+const fireArrow = MSC.skillAt('fire-arrow', 30, { ms: 810 });
+const poisonBreath = MSC.skillAt('poison-breath', 30, { ms: 810 });
+
+eq('Fire Arrow Lv30 = 180% / 28 MP / burn 50 over 3s',
+  [fireArrow.pct, fireArrow.mp, fireArrow.dotPct, fireArrow.dotSec], [180, 28, 50, 3]);
+eq('Poison Breath Lv30 = 90% / 40 MP / 6 targets / 75% / poison 40 over 5s',
+  [poisonBreath.pct, poisonBreath.mp, poisonBreath.targets, poisonBreath.dotChance, poisonBreath.dotPct, poisonBreath.dotSec],
+  [90, 40, 6, 0.75, 40, 5]);
+
+// element rules: Curse Eye resists poison, Fire Boar resists fire, Jr. Wraith is fire-weak
+const fireBoar = MSC.MOBS.find(m => m.name === 'Fire Boar');
+const jrWraith = MSC.MOBS.find(m => m.name === 'Jr. Wraith');
+ok('Fire Arrow on a fire-resistant mob', MSC.elementMult(fireBoar, 'fire'), 0.75, 0);
+ok('Fire Arrow on a fire-weak mob', MSC.elementMult(jrWraith, 'fire'), 1.25, 0);
+const mobCE = MSC.MOBS.find(m => m.name === 'Curse Eye');
+ok('Poison Breath on a poison-resistant mob', MSC.elementMult(mobCE, 'poison'), 0.75, 0);
+
+const onCurseEye = MSC.compare(mage, [fireArrow, poisonBreath], mobCE, 1);
+const faHit = onCurseEye.results[0], pbHit = onCurseEye.results[1];
+console.log(`${pbHit.dotBlocked ? 'PASS' : 'FAIL'}  poison DoT is blocked on a poison-resistant mob`);
+if (!pbHit.dotBlocked) fails++;
+console.log(`${!faHit.dotBlocked ? 'PASS' : 'FAIL'}  fire burn still applies on a neutral-to-fire mob`);
+if (faHit.dotBlocked) fails++;
+ok('Fire Arrow MP per cast on Curse Eye', faHit.mpPerKill, 28, 0);
+console.log(`${onCurseEye.best.skill.name === 'Fire Arrow' ? 'PASS' : 'FAIL'}  best skill on Curse Eye is Fire Arrow (${Math.round(onCurseEye.best.expPerMin)} vs ${Math.round(onCurseEye.results[1].expPerMin)} EXP/min)`);
+if (onCurseEye.best.skill.name !== 'Fire Arrow') fails++;
+
+// six monsters in range: Poison Breath's 6-target cap must out-earn Fire Arrow
+const six = MSC.compare(mage, [fireArrow, poisonBreath], mobCE, 6);
+console.log(`${six.best.skill.name === 'Poison Breath' ? 'PASS' : 'FAIL'}  6 targets flips it to Poison Breath (${Math.round(six.best.expPerMin)} EXP/min, ${Math.round(six.best.mpPerKill)} MP/kill)`);
+if (six.best.skill.name !== 'Poison Breath') fails++;
+console.log(`${six.best.expPerMin > onCurseEye.results[0].expPerMin ? 'PASS' : 'FAIL'}  multi-target EXP/min beats single-target (${Math.round(six.best.expPerMin)} vs ${Math.round(onCurseEye.results[0].expPerMin)})`);
+if (six.best.expPerMin <= onCurseEye.results[0].expPerMin) fails++;
+
+// magic formula identity from the MSCW explainer
+const mageSw = MSC.rawRange(100, mage);
+ok('magic MAX = (floor(INT/2)+MATK)*(1+INT/125)', mageSw.max, (150 + 100) * (1 + 300 / 125), 1);
 
 // --- a high-level character should prefer a different, higher mob
 const lv60 = Object.assign({}, mastered, { lv: 60, P: 300, Q: 80, WATK: 90, ML: 10, W: 2.5, critRate: 5, critDmg: 20 });
