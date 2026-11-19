@@ -1,0 +1,456 @@
+{
+ "source": "henesys.gg/damage \u2014 held out, generated and captured after the formula was frozen",
+ "seed": 2026,
+ "cases": [
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 220,
+    "Your level": 25,
+    "Total STR": 120,
+    "Total DEX": 240,
+    "Weapon Attack": 200,
+    "Attack from gear and buffs": 35,
+    "Weapon mastery level": 9,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    2640,
+    3124
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Regular attack",
+   "fields": {
+    "Damage %": 280,
+    "Your level": 45,
+    "Total STR": 60,
+    "Total DEX": 15,
+    "Weapon Attack": 25,
+    "Attack from gear and buffs": 12,
+    "Weapon mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    90,
+    202
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Slash Blast",
+   "fields": {
+    "Damage %": 90,
+    "Your level": 80,
+    "Total STR": 200,
+    "Total DEX": 70,
+    "Weapon Attack": 140,
+    "Attack from gear and buffs": 12,
+    "Weapon mastery level": 6,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    527,
+    874
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Slash Blast",
+   "fields": {
+    "Damage %": 280,
+    "Your level": 25,
+    "Total STR": 200,
+    "Total DEX": 15,
+    "Weapon Attack": 200,
+    "Attack from gear and buffs": 35,
+    "Weapon mastery level": 6,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    2296,
+    3835
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Slash Blast",
+   "fields": {
+    "Damage %": 280,
+    "Your level": 45,
+    "Total STR": 360,
+    "Total DEX": 150,
+    "Weapon Attack": 25,
+    "Attack from gear and buffs": 35,
+    "Weapon mastery level": 6,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    518,
+    853
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Slash Blast",
+   "fields": {
+    "Damage %": 280,
+    "Your level": 80,
+    "Total STR": 60,
+    "Total DEX": 240,
+    "Weapon Attack": 200,
+    "Attack from gear and buffs": 35,
+    "Weapon mastery level": 9,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    2772,
+    3136
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 280,
+    "Your level": 80,
+    "Total STR": 280,
+    "Total DEX": 150,
+    "Weapon Attack": 140,
+    "Attack from gear and buffs": 35,
+    "Weapon mastery level": 9,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    3096,
+    3998
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Regular attack",
+   "fields": {
+    "Damage %": 340,
+    "Your level": 25,
+    "Total STR": 360,
+    "Total DEX": 70,
+    "Weapon Attack": 60,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1719,
+    2182
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Regular attack",
+   "fields": {
+    "Damage %": 90,
+    "Your level": 80,
+    "Total STR": 280,
+    "Total DEX": 70,
+    "Weapon Attack": 140,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    250,
+    1096
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Regular attack",
+   "fields": {
+    "Damage %": 280,
+    "Your level": 80,
+    "Total STR": 360,
+    "Total DEX": 150,
+    "Weapon Attack": 200,
+    "Attack from gear and buffs": 12,
+    "Weapon mastery level": 6,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    3891,
+    6574
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Regular attack",
+   "fields": {
+    "Damage %": 340,
+    "Your level": 80,
+    "Total STR": 280,
+    "Total DEX": 240,
+    "Weapon Attack": 60,
+    "Attack from gear and buffs": 12,
+    "Weapon mastery level": 6,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1401,
+    2170
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 90,
+    "Your level": 45,
+    "Total STR": 360,
+    "Total DEX": 240,
+    "Weapon Attack": 200,
+    "Attack from gear and buffs": 12,
+    "Weapon mastery level": 6,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1413,
+    2275
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 220,
+    "Your level": 80,
+    "Total STR": 280,
+    "Total DEX": 240,
+    "Weapon Attack": 140,
+    "Attack from gear and buffs": 35,
+    "Weapon mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1352,
+    3418
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Slash Blast",
+   "fields": {
+    "Damage %": 220,
+    "Your level": 80,
+    "Total STR": 60,
+    "Total DEX": 240,
+    "Weapon Attack": 200,
+    "Attack from gear and buffs": 12,
+    "Weapon mastery level": 9,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1975,
+    2261
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "magic",
+   "attack": "Magic Claw",
+   "fields": {
+    "Basic Attack": 300,
+    "Your level": 80,
+    "Total INT": 70,
+    "Magic Attack": 90,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    536,
+    585
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Energy Bolt",
+   "fields": {
+    "Basic Attack": 85,
+    "Your level": 45,
+    "Total INT": 460,
+    "Magic Attack": 35,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    863,
+    1054
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 85,
+    "Your level": 25,
+    "Total INT": 460,
+    "Magic Attack": 0,
+    "Spell mastery level": 4,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    447,
+    914
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Magic Claw",
+   "fields": {
+    "Basic Attack": 85,
+    "Your level": 25,
+    "Total INT": 320,
+    "Magic Attack": 90,
+    "Spell mastery level": 4,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    402,
+    756
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 200,
+    "Your level": 80,
+    "Total INT": 180,
+    "Magic Attack": 35,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    527,
+    610
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Thunder Bolt",
+   "fields": {
+    "Basic Attack": 140,
+    "Your level": 65,
+    "Total INT": 70,
+    "Magic Attack": 180,
+    "Spell mastery level": 4,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    359,
+    469
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Magic Claw",
+   "fields": {
+    "Basic Attack": 200,
+    "Your level": 80,
+    "Total INT": 460,
+    "Magic Attack": 35,
+    "Spell mastery level": 4,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1212,
+    2480
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Cold Beam",
+   "fields": {
+    "Basic Attack": 85,
+    "Your level": 25,
+    "Total INT": 460,
+    "Magic Attack": 0,
+    "Spell mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    245,
+    914
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Energy Bolt",
+   "fields": {
+    "Basic Attack": 200,
+    "Your level": 25,
+    "Total INT": 70,
+    "Magic Attack": 180,
+    "Spell mastery level": 8,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    581,
+    670
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Energy Bolt",
+   "fields": {
+    "Basic Attack": 300,
+    "Your level": 65,
+    "Total INT": 70,
+    "Magic Attack": 180,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    923,
+    1006
+   ]
+  }
+ ]
+}
