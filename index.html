@@ -1540,7 +1540,7 @@ window.mobIcon = function (n) {
       C.P = prim; C.Q = sec; C.WATK = V.WATK || 0; C.W = w.w;
       C.critRate = (klass === 'bowman' || klass === 'thief') ? 5 : 0;
       C.critDmg = (klass === 'bowman' || klass === 'thief') ? 20 : 0;
-      C.ML = 0; // mastery left at 0: the user types the range they actually see
+      C.ML = 10; // assumes maxed weapon mastery; typing a damage range overrides it entirely
     }
     const res = MSC.applyBuffs(C, BUFF);
     return res.C ? res.C : C;
