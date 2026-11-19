@@ -63,7 +63,8 @@ const checks = [
   ['verdict rendered', verdict.length > 40],
   ['per-hit table has 3 body rows + header', rows === 4],
   ['crossover table filled', cross === 7],
-  ['best-mob table filled', best === 16]
+  ['best-mob table filled', best === 16],
+  ['live model verification table rendered', (el('checkTable').innerHTML.match(/<tr/g) || []).length === 9]
 ];
 let fails = 0;
 for (const [name, okv] of checks) { if (!okv) fails++; console.log(`${okv ? 'PASS' : 'FAIL'}  ${name}`); }
@@ -76,6 +77,19 @@ console.log(`       at 4 mobs   : ${v4.slice(0, 120)}`);
 const mobWin = /Use Slash Blast/.test(v4);
 if (!mobWin) fails++;
 console.log(`${mobWin ? 'PASS' : 'FAIL'}  switching mob count to 4 flips the verdict to mobbing`);
+if (!mobWin) fails++;
+
+// calibration path: load the reference stat block, then type an observed hit line
+[['plv','50'],['P','180'],['Q','60'],['WATK','70'],['ML','10'],['W','2.5']].forEach(([id,v]) => { el(id).value = v; });
+el('W').fire('change');
+el('s1obsMin').value = '900';
+el('s1obsMax').value = '1110';
+el('s1obsMax').fire('input');
+const calMsg = el('s1implied').innerHTML.replace(/<[^>]+>/g, '').trim();
+console.log('       calibration : ' + calMsg);
+const calOk = /Calibrated/.test(calMsg) && /2[56]\d(\.\d)?%/.test(calMsg);
+if (!calOk) fails++;
+console.log(`${calOk ? 'PASS' : 'FAIL'}  observed hit line back-solves to the skill damage %`);
 
 console.log(fails === 0 ? '\nUI SMOKE TEST PASSED' : `\n${fails} UI CHECK(S) FAILED`);
 process.exit(fails === 0 ? 0 : 1);

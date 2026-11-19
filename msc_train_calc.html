@@ -90,7 +90,7 @@
   <section class="panel">
     <h2>2 · Skills</h2>
     <h3 style="margin-top:0">1v1 skill</h3>
-    <div class="f"><label>Preset</label>
+    <div class="f"><label>Preset <span class="dim">(verify %)</span></label>
       <select id="s1preset">
         <option value="">— custom —</option>
         <option value="260,1,1,720">Power Strike 260% · 1 hit</option>
@@ -108,9 +108,12 @@
     <div class="f"><label>Hits per cast</label><input id="s1hits" type="number" value="1" min="1" max="12"></div>
     <div class="f"><label>Target cap</label><input id="s1cap" type="number" value="1" min="1" max="15"></div>
     <div class="f"><label>Cast time ms</label><input id="s1ms" type="number" value="720" min="200"></div>
+    <div class="f"><label>Observed hit MIN <span class="dim">(optional)</span></label><input id="s1obsMin" type="number" placeholder="in-game"></div>
+    <div class="f"><label>Observed hit MAX</label><input id="s1obsMax" type="number" placeholder="in-game"></div>
+    <div class="mini" id="s1implied"></div>
 
     <h3>Mob attack</h3>
-    <div class="f"><label>Preset</label>
+    <div class="f"><label>Preset <span class="dim">(verify %)</span></label>
       <select id="sMpreset">
         <option value="">— custom —</option>
         <option value="130,1,6,720">Slash Blast 130% · 6 targets</option>
@@ -127,6 +130,10 @@
     <div class="f"><label>Hits per cast</label><input id="sMhits" type="number" value="1" min="1" max="12"></div>
     <div class="f"><label>Target cap</label><input id="sMcap" type="number" value="6" min="1" max="15"></div>
     <div class="f"><label>Cast time ms</label><input id="sMms" type="number" value="720" min="200"></div>
+    <div class="f"><label>Observed hit MIN <span class="dim">(optional)</span></label><input id="sMobsMin" type="number" placeholder="in-game"></div>
+    <div class="f"><label>Observed hit MAX</label><input id="sMobsMax" type="number" placeholder="in-game"></div>
+    <div class="mini" id="sMimplied"></div>
+    <div class="mini">Calibration beats any preset: hit a monster with 0 defence, type the two numbers you see, and the whole model is pinned to your actual client.</div>
     <div class="mini">Cast times follow the weapon speed ladder: Fast(4) 1H 720 ms, 600 with Booster; Average(6) 810 ms; Magician spells 810 ms (720 with max Spell Booster).</div>
   </section>
 
@@ -172,6 +179,12 @@
   </section>
 </div>
 
+<section class="panel" style="margin-top:16px">
+  <h2>Model verification — run live against documented MSCW numbers</h2>
+  <div class="scroll"><table id="checkTable"></table></div>
+  <div class="note" id="checkNote"></div>
+</section>
+
 <div class="note" style="max-width:980px">
   <b>Formula.</b> MIN = S·WATK·(0.8 + (P·m·W + Q)/100 + A/50) · MAX = S·WATK·(1 + (P·W + Q)/100 + A/50) · m = (MasteryLv/10 + 0.1)·0.7 · avg = S·WATK·(0.9 + (P·(m+1)/2·W + Q)/100 + A/50).
   Then Raw × 100/(P.DEF+100) → element → level gap (≤0 ×1, 1–9 → 1/(1+gap²·0.005), ≥10 → 1/(1+gap·0.05)) → crit ×(1+c·d) → clamp 1…99,999 per line.
@@ -196,8 +209,10 @@ function charCtx() {
 }
 function skills() {
   return {
-    one: { name: $('s1name').value || '1v1', pct: num('s1pct'), hits: num('s1hits') || 1, cap: num('s1cap') || 1, ms: num('s1ms') || 750 },
-    mob: { name: $('sMname').value || 'Mob attack', pct: num('sMpct'), hits: num('sMhits') || 1, cap: num('sMcap') || 1, ms: num('sMms') || 750 }
+    one: { name: $('s1name').value || '1v1', pct: num('s1pct'), hits: num('s1hits') || 1, cap: num('s1cap') || 1, ms: num('s1ms') || 750,
+           obsMin: num('s1obsMin'), obsMax: num('s1obsMax') },
+    mob: { name: $('sMname').value || 'Mob attack', pct: num('sMpct'), hits: num('sMhits') || 1, cap: num('sMcap') || 1, ms: num('sMms') || 750,
+           obsMin: num('sMobsMin'), obsMax: num('sMobsMax') }
   };
 }
 function mobCtx() {
@@ -230,6 +245,17 @@ function compute() {
   $('rangeOut').innerHTML = C.mode === 'observed'
     ? `<span class="dim">Observed stat-window range:</span> <b>${fmt0(C.obsMin)} – ${fmt0(C.obsMax)}</b> (avg ${fmt0((C.obsMin + C.obsMax) / 2)})`
     : `<span class="dim">Stat-window range:</span> <b>${fmt0(a.statWindow.min)} – ${fmt0(a.statWindow.max)}</b> (avg ${fmt0(a.statWindow.avg)}) · weapon ×${C.W} · mastery ${C.ML}`;
+
+  /* calibration readouts */
+  const cal = (sk, outId) => {
+    if (sk.obsMax > 0) {
+      const ip = MSC.impliedPct(sk.obsMax, C);
+      $(outId).innerHTML = `<span class="ok">Calibrated</span> — observed ${fmt0(sk.obsMin || sk.obsMax)}–${fmt0(sk.obsMax)} implies ${ip ? fmt(ip) + '% damage' : '—'} at these stats.`;
+    } else {
+      $(outId).textContent = '';
+    }
+  };
+  cal(S.one, 's1implied'); cal(S.mob, 'sMimplied');
 
   /* per-hit table */
   const rows = [
@@ -275,6 +301,22 @@ function compute() {
   bh += `</tbody>`;
   $('bestTable').innerHTML = bh;
   $('bestNote').textContent = `Casts to kill = ceil(HP ÷ per-cast damage), so HP that lands just under a multiple of your cast damage ranks abnormally well (no overkill). Bosses excluded. ${list.length} mobs inside your level window (${C.lv - 12} to ${C.lv + 8}).`;
+
+  /* model verification, computed live */
+  const sc = MSC.selfCheck();
+  const show = v => Math.abs(v) < 2 ? v.toFixed(4) : fmt0(v);
+  let kh = `<thead><tr><th class="l">Check</th><th>This app</th><th>Documented MSCW</th><th>Result</th></tr></thead><tbody>`;
+  sc.cases.forEach(c => {
+    kh += `<tr><td class="l">${c.name}</td><td>${c.got.map(show).join(' / ')}</td>
+      <td>${c.want.map(show).join(' / ')}</td>
+      <td class="${c.pass ? 'ok' : 'no'}">${c.pass ? 'match' : 'MISMATCH'}</td></tr>`;
+  });
+  kh += `</tbody>`;
+  $('checkTable').innerHTML = kh;
+  $('checkNote').innerHTML = `${sc.pass ? '<span class="ok">All anchors match.</span>' : '<span class="no">An anchor failed — do not trust the ranking.</span>'}
+    Stat-block anchors come from the MSCW damage-formula write-up (meowdb.com/msclassic, updated 2026-11-18); the 885–1,110 block, mastery-0 minimum, ×0.833 WDEF curve and 1/(1+0.05·gap) level scaling were read off the MSCW damage calculator's own output for those inputs.
+    Mob HP / EXP / P.DEF cross-checked on two independent MSCW databases (Curse Eye: Lv 33 · 1,001 HP · 20 P.DEF · 63 EXP on both).
+    Old-MapleStory and pre-Big-Bang formulas are not used: MSCW has its own weapon-multiplier set (1H sword 1.8, 2H sword 2.5, 1H axe/blunt 1.92 mixed, 2H 2.60 mixed, spear 2.30 mixed, polearm 2.70 mixed, dagger 1.40 mixed, bow/crossbow/claw 2.5).`;
 }
 
 /* wiring */
@@ -303,7 +345,8 @@ function wirePreset(selId, p) {
 }
 wirePreset('s1preset', 's1'); wirePreset('sMpreset', 'sM');
 ['plv','P','Q','WATK','AP','ML','W','critRate','critDmg','obsMin','obsMax',
- 's1name','s1pct','s1hits','s1cap','s1ms','sMname','sMpct','sMhits','sMcap','sMms',
+ 's1name','s1pct','s1hits','s1cap','s1ms','s1obsMin','s1obsMax',
+ 'sMname','sMpct','sMhits','sMcap','sMms','sMobsMin','sMobsMax',
  'mlv','mhp','mdef','mexp','nMobs','elem'].forEach(id => {
   $(id).addEventListener('change', compute);
   $(id).addEventListener('input', compute);

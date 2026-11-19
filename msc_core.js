@@ -40,11 +40,22 @@
     return (ml / 10 + 0.1) * 0.7;
   }
 
-  /* raw per-hit range BEFORE monster defense. mode 'observed' scales the stat-window range by skill %. */
-  function rawRange(pct, C) {
+  /* raw per-hit range BEFORE monster defense.
+     spec = skill % number, or a skill object (supports per-skill observed calibration)
+     C.mode === 'observed' scales the stat-window range by skill %. */
+  function rawRange(spec, C) {
+    const skill = (typeof spec === 'number') ? { pct: spec } : (spec || {});
+    const pct = skill.pct == null ? 100 : skill.pct;
+
+    // exact calibration: numbers read off your own damage lines (pre-defense)
+    if (skill.obsMax > 0) {
+      const lo = skill.obsMin > 0 ? skill.obsMin : skill.obsMax;
+      return { min: Math.trunc(lo), max: Math.trunc(skill.obsMax), avg: (lo + skill.obsMax) / 2, observed: true };
+    }
+
     const S = pct / 100;
     if (C.mode === 'observed') {
-      return { min: C.obsMin * S, max: C.obsMax * S, avg: (C.obsMin + C.obsMax) / 2 * S };
+      return { min: C.obsMin * S, max: C.obsMax * S, avg: (C.obsMin + C.obsMax) / 2 * S, observed: true };
     }
     const m = mastery(C.ML);
     const A = C.A || 0;
@@ -55,6 +66,12 @@
       max: Math.trunc(base(1.0, 1)),
       avg: S * C.WATK * (0.9 + (C.P * ((m + 1) / 2) * C.W + C.Q) / 100 + A / 50)
     };
+  }
+
+  /* what damage % does an observed hit line imply, given the stat block? */
+  function impliedPct(obsMax, C) {
+    const unit = C.WATK * (1 + (C.P * C.W + C.Q) / 100 + (C.A || 0) / 50);
+    return unit > 0 ? obsMax / unit * 100 : null;
   }
 
   function levelScale(playerLv, mobLv) {
@@ -86,8 +103,8 @@
   /* full analysis for one mob + one "mobs on screen" count */
   function analyze(C, S, mob, elemMult, N) {
     const n = Math.max(1, N || 1);
-    const rawOne = rawRange(S.one.pct, C);
-    const rawMob = rawRange(S.mob.pct, C);
+    const rawOne = rawRange(S.one, C);
+    const rawMob = rawRange(S.mob, C);
     const one = applyTarget(rawOne, mob, C.lv, C, elemMult);
     const mobH = applyTarget(rawMob, mob, C.lv, C, elemMult);
 
@@ -153,7 +170,40 @@
     return out;
   }
 
-  const api = { CAP, MOBS, mastery, rawRange, levelScale, applyTarget, analyze, rankMobs };
+  /* self-check against documented MapleStory Classic World numbers.
+     Anchors come from the MSCW damage-formula write-up (reference stat block 47 W.ATK / STR 132 / DEX 30 / 1H sword)
+     and from the MSCW damage calculator's own output (885-1,110 at 260%, 316 min at mastery 0, 0.833 WDEF curve). */
+  function selfCheck() {
+    const ref = { lv: 30, mode: 'stats', P: 132, Q: 30, WATK: 47, A: 0, ML: 0, W: 1.8, critRate: 0, critDmg: 0 };
+    const refMastered = Object.assign({}, ref, { ML: 10 });
+    const b0 = rawRange(100, ref), p0 = rawRange(260, ref);
+    const b10 = rawRange(100, refMastered), p10 = rawRange(260, refMastered);
+
+    // calculator reference block: 2H sword (x2.5), STR 180 / DEX 60 / 70 W.ATK, mastery 10, Power Strike 260%
+    const calc = { lv: 50, mode: 'stats', P: 180, Q: 60, WATK: 70, A: 0, ML: 10, W: 2.5, critRate: 0, critDmg: 0 };
+    const ps = rawRange(260, calc);
+    const calcML0 = Object.assign({}, calc, { ML: 0 });
+    const psML0 = rawRange(260, calcML0);
+    const polearm = Object.assign({}, calc, { W: 2.7, ML: 0 });
+    const psPole0 = rawRange(260, polearm);
+
+    const cases = [
+      { name: 'basic attack, mastery 0', got: [b0.min, b0.max], want: [59, 172] },
+      { name: 'Power Strike 260%, mastery 0', got: [p0.min, p0.max], want: [154, 449] },
+      { name: 'basic attack, mastery 10', got: [b10.min, b10.max], want: [137, 172] },
+      { name: 'Power Strike 260%, mastery 10', got: [p10.min, p10.max], want: [357, 449] },
+      { name: 'Power Strike 260%, 2H sword block', got: [ps.min, ps.max], want: [885, 1110] },
+      { name: 'Polearm x2.7, mastery 0', got: [psPole0.min, psPole0.max], want: [316, 1175] },
+      { name: 'WDEF 20 curve', got: [100 / (20 + 100)], want: [0.8333333] },
+      { name: 'level gap 13', got: [levelScale(20, 33)], want: [1 / 1.65] }
+    ].map(c => {
+      const pass = c.got.every((g, i) => Math.abs(g - c.want[i]) <= (Math.abs(c.want[i]) < 2 ? 0.001 : 1));
+      return { name: c.name, got: c.got, want: c.want, pass };
+    });
+    return { cases, pass: cases.every(c => c.pass) };
+  }
+
+  const api = { CAP, MOBS, mastery, rawRange, impliedPct, levelScale, applyTarget, analyze, rankMobs, selfCheck };
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
   root.MSC = api;
 })(typeof window !== 'undefined' ? window : globalThis);

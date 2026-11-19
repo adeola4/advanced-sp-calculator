@@ -79,5 +79,42 @@ const S60 = { one: { name: 'Power Strike', pct: 260, hits: 1, cap: 1, ms: 720 },
 const rank60 = MSC.rankMobs(lv60, S60, 1, { up: 8, down: 12 });
 console.log(`       level-60 char, top 6: ` + rank60.slice(0, 6).map(m => `${m.name} ${Math.round(m.epm)} exp/min`).join(' | '));
 
+// --- anchor 6: MSCW damage-calculator reference block (2H sword 2.5 / STR 180 / DEX 60 / 70 W.ATK)
+const calc = { lv: 50, mode: 'stats', P: 180, Q: 60, WATK: 70, A: 0, ML: 10, W: 2.5, critRate: 0, critDmg: 0 };
+const psCalc = MSC.rawRange(260, calc);
+ok('calc block MIN (2H sword, mastery 10)', psCalc.min, 885, 1);
+ok('calc block MAX (2H sword, mastery 10)', psCalc.max, 1110, 1);
+const pole0 = Object.assign({}, calc, { W: 2.7, ML: 0 });
+const psPole0 = MSC.rawRange(260, pole0);
+ok('calc block MIN (polearm, mastery 0)', psPole0.min, 316, 1);
+ok('calc block MAX (polearm, mastery 0)', psPole0.max, 1175, 1);
+const gear10 = Object.assign({}, calc, { W: 2.7, ML: 10, A: 10 });
+const psGear = MSC.rawRange(260, gear10);
+ok('calc block MIN (polearm, +10 attack power)', psGear.min, 972, 1);
+ok('calc block MAX (polearm, +10 attack power)', psGear.max, 1212, 1);
+
+// --- anchor 7: on-monster numbers the calculator reports
+const ceHi = MSC.applyTarget(psCalc, curseEye, 50, calc, 1);
+ok('Curse Eye MIN at level 50', ceHi.min, 737, 1);
+ok('Curse Eye MAX at level 50', ceHi.max, 925, 1);
+const ceLo = MSC.applyTarget(psCalc, curseEye, 20, calc, 1);
+ok('Curse Eye MIN at level 20 (gap 13)', ceLo.min, 447, 1);
+ok('Curse Eye MAX at level 20 (gap 13)', ceLo.max, 560, 1);
+
+// --- anchor 8: calibration from an observed hit line
+ok('implied % from a 1,110 max hit', Math.round(MSC.impliedPct(1110, calc) * 100) / 100, 260, 0.2);
+const calibrated = { name: 'Power Strike', pct: 260, hits: 1, cap: 1, ms: 720, obsMin: 900, obsMax: 1110 };
+const calRange = MSC.rawRange(calibrated, calc);
+ok('calibrated skill MIN overrides formula', calRange.min, 900, 0);
+ok('calibrated skill MAX overrides formula', calRange.max, 1110, 0);
+console.log(`${MSC.impliedPct(1110, Object.assign({}, calc, { WATK: 0 })) === null ? 'PASS' : 'FAIL'}  implied % safe with zero W.ATK`);
+if (MSC.impliedPct(1110, Object.assign({}, calc, { WATK: 0 })) !== null) fails++;
+
+// --- anchor 9: live self-check must be clean
+const sc = MSC.selfCheck();
+console.log(`${sc.pass ? 'PASS' : 'FAIL'}  core self-check (${sc.cases.length} documented anchors)`);
+sc.cases.filter(c => !c.pass).forEach(c => console.log('        mismatch:', JSON.stringify(c)));
+if (!sc.pass) fails++;
+
 console.log(fails === 0 ? '\nALL CHECKS PASSED' : `\n${fails} CHECK(S) FAILED`);
 process.exit(fails === 0 ? 0 : 1);
