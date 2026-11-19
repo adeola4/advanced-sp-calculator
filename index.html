@@ -782,8 +782,12 @@ function compute() {
   if (best.skill.targets > 1 && best.targets > 1) reasons.push(`it hits ${best.targets} monsters per cast`);
   if (best.mpPerKill < other.mpPerKill) reasons.push(`cheaper: ${fmt0(best.mpPerKill)} MP per kill vs ${fmt0(other.mpPerKill)}`);
 
-  $('verdictWrap').innerHTML = `<div class="verdict ${ratio > 0.02 ? 'good' : 'bad'}">
-    <div class="big">Use ${best.skill.name} on ${M.name} — ${fmt0(best.expPerMin)} EXP/min vs ${fmt0(other.expPerMin)} for ${other.skill.name} (${(ratio * 100).toFixed(0)}% better)</div>
+  const tie = Math.abs(ratio) <= 0.02;
+  const headline = tie
+    ? `${best.skill.name} and ${other.skill.name} are even on ${M.name} — both ${fmt0(best.expPerMin)} EXP/min. Pick on MP: ${fmt0(best.mpPerKill)} vs ${fmt0(other.mpPerKill)} MP per kill.`
+    : `Use ${best.skill.name} on ${M.name} — ${fmt0(best.expPerMin)} EXP/min vs ${fmt0(other.expPerMin)} for ${other.skill.name} (${(ratio * 100).toFixed(0)}% ${ratio > 0 ? 'better' : 'worse'})`;
+  $('verdictWrap').innerHTML = `<div class="verdict ${tie ? '' : ratio > 0.02 ? 'good' : 'bad'}">
+    <div class="big">${headline}</div>
     <div class="dim" style="margin-top:6px">
       ${best.casts} cast${best.casts > 1 ? 's' : ''} to kill${best.targets > 1 ? ' × ' + best.targets : ''}, ${(best.ttkMs / 1000).toFixed(1)}s.
       MP per kill <b>${fmt0(best.mpPerKill)}</b> · MP per minute <b>${fmt0(best.mpPerMin)}</b>${potMP > 0 && potPrice > 0 ? ` · <b>${fmt0(best.mpPerMin / potMP * potPrice)} mesos/hour</b> in potions` : ''}.
