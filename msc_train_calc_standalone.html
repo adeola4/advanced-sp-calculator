@@ -1,0 +1,477 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MSCW — 1v1 vs Mob Attack Training Calculator</title>
+<style>
+  :root{
+    --bg:#0f1216; --panel:#161b22; --panel2:#1b2230; --line:#2b3442;
+    --txt:#e6edf3; --dim:#8b98a9; --accent:#4fc3f7; --good:#3ddc84; --bad:#ff7b72; --warn:#ffb454;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--txt);font:14px/1.45 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  header{padding:18px 22px 8px;border-bottom:1px solid var(--line)}
+  h1{font-size:18px;margin:0 0 4px;letter-spacing:.2px}
+  header p{margin:0;color:var(--dim);font-size:12.5px}
+  main{padding:18px 22px 60px;max-width:1420px;margin:0 auto}
+  .row{display:grid;grid-template-columns:repeat(auto-fit,minmax(330px,1fr));gap:16px;align-items:start}
+  .panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 14px 16px}
+  .panel h2{font-size:13px;text-transform:uppercase;letter-spacing:.8px;color:var(--accent);margin:0 0 12px;font-weight:600}
+  .panel h3{font-size:12px;text-transform:uppercase;letter-spacing:.6px;color:var(--dim);margin:16px 0 8px;font-weight:600}
+  .f{display:grid;grid-template-columns:1fr 100px;gap:6px 10px;align-items:center;margin-bottom:7px}
+  .f>label{color:var(--dim);font-size:12.5px}
+  input,select,button{font:inherit;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:100%}
+  input:focus,select:focus{outline:1px solid var(--accent)}
+  .mini{font-size:11px;color:var(--dim);margin:2px 0 10px}
+  button{cursor:pointer;background:#22303f;border-color:#31435a;padding:9px 12px;font-weight:600}
+  button:hover{background:#2a3b4d}
+  .verdict{border-radius:10px;padding:14px 16px;margin:0 0 16px;border:1px solid var(--line);background:var(--panel2)}
+  .verdict .big{font-size:20px;font-weight:700;letter-spacing:.2px;line-height:1.3}
+  .verdict.good .big{color:var(--good)}
+  .verdict.bad .big{color:var(--warn)}
+  table{width:100%;border-collapse:collapse;font-size:12.5px}
+  th,td{padding:5px 7px;text-align:right;border-bottom:1px solid #222b36;white-space:nowrap}
+  th{color:var(--dim);font-weight:600;font-size:11px;text-transform:uppercase;letter-spacing:.4px}
+  td.l,th.l{text-align:left}
+  tr:hover td{background:#1a212c}
+  .v{font-weight:600}
+  .dim{color:var(--dim)}
+  .ok{color:var(--good)} .no{color:var(--bad)} .wa{color:var(--warn)}
+  .note{font-size:11.5px;color:var(--dim);margin-top:10px;line-height:1.5}
+  .scroll{max-height:430px;overflow:auto}
+</style>
+</head>
+<body>
+<header>
+  <h1>MapleStory Classic — 1v1 vs Mob Attack Calculator</h1>
+  <p>MSCW damage formula → P.DEF → level gap → crit → 99,999 clamp. Tells you the exact mob count where mobbing beats your 1v1 skill, and ranks the mobs your character actually kills fastest.</p>
+</header>
+<main>
+
+<div class="row">
+  <section class="panel">
+    <h2>1 · Character</h2>
+    <div class="f"><label>Level</label><input id="plv" type="number" value="30" min="1" max="200"></div>
+    <div class="f"><label>Damage source</label>
+      <select id="mode"><option value="stats">Stats → formula</option><option value="observed">Observed hit range</option></select>
+    </div>
+    <div id="statsBlock">
+      <div class="f"><label>Primary stat (STR/DEX/LUK/INT)</label><input id="P" type="number" value="132"></div>
+      <div class="f"><label>Secondary stat</label><input id="Q" type="number" value="30"></div>
+      <div class="f"><label>Total W.ATK (all equipped)</label><input id="WATK" type="number" value="47"></div>
+      <div class="f"><label>Attack Power buff (A)</label><input id="AP" type="number" value="0"></div>
+      <div class="f"><label>Mastery level (0–10)</label><input id="ML" type="number" value="0" min="0" max="10" step="1"></div>
+      <div class="f"><label>Weapon action</label>
+        <select id="W">
+          <option value="1.8">1H Sword 1.8</option>
+          <option value="2.5">2H Sword 2.5</option>
+          <option value="1.8">1H Axe/Blunt mixed 1.8</option>
+          <option value="2.5">2H Axe/Blunt mixed 2.5</option>
+          <option value="2.5">Spear mixed 2.5</option>
+          <option value="2.5">Polearm mixed 2.5</option>
+          <option value="1.5">Dagger mixed 1.5</option>
+          <option value="2.5">Bow/Crossbow/Claw 2.5</option>
+          <option value="3.0">Lucky Seven (claw) 3.0</option>
+          <option value="1.8">Wand/Staff whack 1.8</option>
+        </select>
+      </div>
+      <div class="f"><label>Crit rate % (base 5)</label><input id="critRate" type="number" value="5" step="0.1"></div>
+      <div class="f"><label>Crit damage % (base 20)</label><input id="critDmg" type="number" value="20" step="0.1"></div>
+    </div>
+    <div id="obsBlock" style="display:none">
+      <div class="mini">Two numbers from your stat window (basic-attack range, before monster defense). Skill % still multiplies them.</div>
+      <div class="f"><label>Stat-window MIN</label><input id="obsMin" type="number" value="59"></div>
+      <div class="f"><label>Stat-window MAX</label><input id="obsMax" type="number" value="172"></div>
+    </div>
+    <div class="note" id="rangeOut"></div>
+  </section>
+
+  <section class="panel">
+    <h2>2 · Skills</h2>
+    <h3 style="margin-top:0">1v1 skill</h3>
+    <div class="f"><label>Preset</label>
+      <select id="s1preset">
+        <option value="">— custom —</option>
+        <option value="260,1,1,720">Power Strike 260% · 1 hit</option>
+        <option value="150,2,1,600">Lucky Seven 150% ×2</option>
+        <option value="130,2,1,750">Double Shot 130% ×2</option>
+        <option value="260,1,1,750">Arrow Blow 260% · 1 hit</option>
+        <option value="150,6,1,780">Savage Blow 150% ×6</option>
+        <option value="130,2,1,780">Double Stab 130% ×2</option>
+        <option value="260,1,1,810">Fire Arrow / Cold Beam 260%</option>
+        <option value="260,1,1,810">Holy Arrow 260% · 1 hit</option>
+      </select>
+    </div>
+    <div class="f"><label>Name</label><input id="s1name" type="text" value="Power Strike"></div>
+    <div class="f"><label>Damage % per hit</label><input id="s1pct" type="number" value="260"></div>
+    <div class="f"><label>Hits per cast</label><input id="s1hits" type="number" value="1" min="1" max="12"></div>
+    <div class="f"><label>Target cap</label><input id="s1cap" type="number" value="1" min="1" max="15"></div>
+    <div class="f"><label>Cast time ms</label><input id="s1ms" type="number" value="720" min="200"></div>
+
+    <h3>Mob attack</h3>
+    <div class="f"><label>Preset</label>
+      <select id="sMpreset">
+        <option value="">— custom —</option>
+        <option value="130,1,6,720">Slash Blast 130% · 6 targets</option>
+        <option value="120,1,6,750">Arrow Bomb 120% · 6 targets</option>
+        <option value="100,1,6,810">Thunder Bolt 100% · 6 targets</option>
+        <option value="100,1,6,810">Poison Breath 100% · 6 targets</option>
+        <option value="100,1,6,750">Iron Arrow 100% · 6 targets</option>
+        <option value="300,1,2,600">Steal / Dragon Buster 300% · 2 targets</option>
+        <option value="180,3,3,810">Dragon Buster 180% ×3 · 3 targets</option>
+      </select>
+    </div>
+    <div class="f"><label>Name</label><input id="sMname" type="text" value="Slash Blast"></div>
+    <div class="f"><label>Damage % per hit</label><input id="sMpct" type="number" value="130"></div>
+    <div class="f"><label>Hits per cast</label><input id="sMhits" type="number" value="1" min="1" max="12"></div>
+    <div class="f"><label>Target cap</label><input id="sMcap" type="number" value="6" min="1" max="15"></div>
+    <div class="f"><label>Cast time ms</label><input id="sMms" type="number" value="720" min="200"></div>
+    <div class="mini">Cast times follow the weapon speed ladder: Fast(4) 1H 720 ms, 600 with Booster; Average(6) 810 ms; Magician spells 810 ms (720 with max Spell Booster).</div>
+  </section>
+
+  <section class="panel">
+    <h2>3 · Target</h2>
+    <div class="f"><label>Mob (starter table)</label><select id="mobSel"></select></div>
+    <div class="f"><label>Mob level</label><input id="mlv" type="number" value="33"></div>
+    <div class="f"><label>Mob HP</label><input id="mhp" type="number" value="1001"></div>
+    <div class="f"><label>Mob P.DEF (WDEF)</label><input id="mdef" type="number" value="20"></div>
+    <div class="f"><label>Mob EXP</label><input id="mexp" type="number" value="63"></div>
+    <div class="f"><label>Mobs you can hit</label><input id="nMobs" type="number" value="1" min="1" max="15"></div>
+    <div class="f"><label>Monster element</label>
+      <select id="elem">
+        <option value="1">Neutral ×1.00</option>
+        <option value="1.25">Weak ×1.25</option>
+        <option value="1.5">Enhanced weak ×1.5</option>
+        <option value="0.75">Resistant ×0.75</option>
+        <option value="0.5">Half ×0.50</option>
+        <option value="0.25">Quarter ×0.25</option>
+      </select>
+    </div>
+    <button id="go" style="margin-top:10px">Compute</button>
+    <div class="note">Editable mob table (Lv 1–80). Accuracy/miss is not modeled — stay within ±5 levels for trustworthy numbers.</div>
+  </section>
+</div>
+
+<section style="margin-top:18px" id="verdictWrap"></section>
+
+<section class="panel" style="margin-top:4px">
+  <h2>Per-hit damage on this mob</h2>
+  <div class="scroll"><table id="perHit"></table></div>
+</section>
+
+<div class="row" style="margin-top:16px">
+  <section class="panel">
+    <h2>Break-even: mobbing DPS by mob count</h2>
+    <div class="scroll"><table id="crossTable"></table></div>
+  </section>
+  <section class="panel">
+    <h2>Best mobs for YOUR damage right now</h2>
+    <div class="scroll"><table id="bestTable"></table></div>
+    <div class="note" id="bestNote"></div>
+  </section>
+</div>
+
+<div class="note" style="max-width:980px">
+  <b>Formula.</b> MIN = S·WATK·(0.8 + (P·m·W + Q)/100 + A/50) · MAX = S·WATK·(1 + (P·W + Q)/100 + A/50) · m = (MasteryLv/10 + 0.1)·0.7 · avg = S·WATK·(0.9 + (P·(m+1)/2·W + Q)/100 + A/50).
+  Then Raw × 100/(P.DEF+100) → element → level gap (≤0 ×1, 1–9 → 1/(1+gap²·0.005), ≥10 → 1/(1+gap·0.05)) → crit ×(1+c·d) → clamp 1…99,999 per line.
+  Crossover N = ceil( 1v1 DPS ÷ per-target mobbing DPS ).
+</div>
+</main>
+
+<script>
+/* msc_core.js — MapleStory Classic World damage + training math.
+   Pure functions, no DOM. Loaded by msc_train_calc.html and by msc_test.js (Node). */
+(function (root) {
+  const CAP = 99999;
+
+  /* name, level, HP, P.DEF, EXP — static starter table, levels 1-80 (edit in-game as needed) */
+  const MOBS = [
+    ["Snail",1,45,0,2],["Blue Snail",2,51,0,4],["Shroom",3,62,0,6],["Red Snail",4,68,15,8],
+    ["Stump",5,133,30,10],["Slime",6,115,10,12],["Pig",7,128,0,13],["Orange Mushroom",8,142,0,15],
+    ["Ribbon Pig",10,172,0,19],["Dark Stump",11,236,30,21],["Octopus",12,191,0,23],
+    ["Green Mushroom",14,233,0,26],["Bubbling",15,259,20,28],["Axe Stump",17,371,30,32],
+    ["Blue Mushroom",19,342,10,35],["Ghost Stump",19,404,15,35],["Stirge",20,296,5,37],
+    ["Jr. Necki",21,272,15,39],["Horny Mushroom",22,403,10,41],["Dark Axe Stump",23,547,30,43],
+    ["Wooden Mask",23,462,0,43],["Zombie Mushroom",24,436,10,45],["Rocky Mask",24,479,30,45],
+    ["Wild Boar",25,510,20,46],["Evil Eye",27,606,10,50],["Fairy",29,593,0,54],
+    ["Ligator",31,853,10,58],["Fire Boar",32,842,10,60],["Curse Eye",33,1001,20,63],
+    ["Jr. Wraith",34,982,30,66],["Jr. Boogie",35,1395,50,69],["Lupin",37,1336,5,75],
+    ["Lorang",38,1714,20,78],["Glowshroom",39,1377,15,82],["Cold Eye",40,1894,10,85],
+    ["Raffle",40,1722,20,85],["Zombie Lupin",41,1774,5,89],["Golden Stirge",42,1278,15,93],
+    ["Aqumander",43,2069,20,98],["Skeledog",44,2134,15,102],["Copper Drake",45,2379,15,107],
+    ["Echopus",45,2163,10,107],["Tortie",46,2226,30,111],["Rafflesia",47,2285,20,117],
+    ["Mummydog",47,2513,15,117],["Wraith",48,2350,30,122],["Clang",49,2657,20,127],
+    ["Drake",50,2950,15,133],["Duskmander",50,2682,10,133],["Croco",52,3136,10,146],
+    ["Myewood",54,3924,20,160],["Malady",55,2998,5,167],["Stone Golem",56,5134,25,175],
+    ["Rotten Mushroom",56,3520,20,183],["Skeleton Soldier",57,3872,15,183],
+    ["Dark Stone Golem",58,5428,5,192],["Sporewood",59,4834,20,201],["Red Drake",60,5184,15,211],
+    ["Wild Kargo",62,5057,30,231],["Officer Skeleton",63,5976,15,242],["Tauromacis",70,9328,25,337],
+    ["Commander Skeleton",73,11915,15,390],["Taurospear",75,12535,5,429],
+    ["Mano (boss)",20,7420,20,148],["King Slime (boss)",32,16820,15,2400],
+    ["Stumpy (boss)",35,19220,20,276],["Mushmom (boss)",40,34440,15,340],
+    ["Shade (boss)",48,47000,30,488],["Zombie Mushmom (boss)",55,66640,10,668],
+    ["Rotten Mushmom (boss)",60,86400,20,844],["Jr. Balrog (boss)",80,325400,15,2188]
+  ];
+
+  /* C = character: {lv, P, Q, WATK, A, ML, W, critRate, critDmg, mode, obsMin, obsMax}
+     Skill = {name, pct, hits, cap, ms} */
+
+  function mastery(ML) {
+    const ml = Math.max(0, Math.min(10, ML || 0));
+    return (ml / 10 + 0.1) * 0.7;
+  }
+
+  /* raw per-hit range BEFORE monster defense. mode 'observed' scales the stat-window range by skill %. */
+  function rawRange(pct, C) {
+    const S = pct / 100;
+    if (C.mode === 'observed') {
+      return { min: C.obsMin * S, max: C.obsMax * S, avg: (C.obsMin + C.obsMax) / 2 * S };
+    }
+    const m = mastery(C.ML);
+    const A = C.A || 0;
+    const base = (roll, mf) => S * C.WATK * (roll + (C.P * mf * C.W + C.Q) / 100 + A / 50);
+    return {
+      // the client truncates each hit to an integer, so the stat window shows truncated corners
+      min: Math.trunc(base(0.8, m)),
+      max: Math.trunc(base(1.0, 1)),
+      avg: S * C.WATK * (0.9 + (C.P * ((m + 1) / 2) * C.W + C.Q) / 100 + A / 50)
+    };
+  }
+
+  function levelScale(playerLv, mobLv) {
+    const gap = mobLv - playerLv;
+    if (gap <= 0) return 1;
+    if (gap < 10) return 1 / (1 + gap * gap * 0.005);
+    return 1 / (1 + gap * 0.05);
+  }
+
+  /* raw -> on-mob per-hit numbers */
+  function applyTarget(raw, mob, playerLv, C, elemMult) {
+    const edef = Math.max(0, mob.def || 0);
+    const defScale = 100 / (edef + 100);
+    const ls = levelScale(playerLv, mob.lv);
+    const c = (C.critRate || 0) / 100, d = (C.critDmg || 0) / 100;
+    const crit = 1 + c * d;
+    const e = elemMult == null ? 1 : elemMult;
+    const post = v => Math.min(CAP, Math.max(1, v * defScale * e * ls * crit));
+    const rawMaxPost = raw.max * defScale * e * ls * crit;
+    return {
+      // final on-screen damage is an integer per line
+      min: Math.trunc(post(raw.min)), max: Math.trunc(post(raw.max)), avg: post(raw.avg),
+      defScale, ls, elemMult: e, crit,
+      capped: rawMaxPost > CAP,
+      overflowPct: rawMaxPost > CAP ? (rawMaxPost / CAP - 1) * 100 : 0
+    };
+  }
+
+  /* full analysis for one mob + one "mobs on screen" count */
+  function analyze(C, S, mob, elemMult, N) {
+    const n = Math.max(1, N || 1);
+    const rawOne = rawRange(S.one.pct, C);
+    const rawMob = rawRange(S.mob.pct, C);
+    const one = applyTarget(rawOne, mob, C.lv, C, elemMult);
+    const mobH = applyTarget(rawMob, mob, C.lv, C, elemMult);
+
+    const castOne = S.one.hits * one.avg;                       // single target
+    const perTargetMob = S.mob.hits * mobH.avg;                 // one target hit by the AoE skill
+    const targets = Math.min(n, S.mob.cap);
+    const castMob = perTargetMob * targets;
+
+    const dpsOne = castOne * 1000 / S.one.ms;
+    const dpsMob = castMob * 1000 / S.mob.ms;
+    const dpsMobPerTarget = perTargetMob * 1000 / S.mob.ms;
+
+    const neededRaw = dpsMobPerTarget > 0 ? dpsOne / dpsMobPerTarget : Infinity;
+    const needed = Math.ceil(neededRaw - 1e-9);
+    const neverWins = !isFinite(needed) || needed > S.mob.cap;
+
+    // time-to-kill + exp/min on this mob, each skill alone
+    function ttk(skill, perCastDamage) {
+      if (perCastDamage <= 0) return { casts: Infinity, ms: Infinity, epm: 0 };
+      const casts = Math.ceil((mob.hp || 1) / perCastDamage);
+      const ms = casts * skill.ms;
+      return { casts, ms, epm: (mob.exp || 0) / (ms / 60000) };
+    }
+    const rOne = ttk(S.one, castOne);
+    const rMob = ttk(S.mob, castMob);
+
+    return {
+      rawOne, rawMob, one, mobH,
+      castOne, perTargetMob, targets, castMob,
+      dpsOne, dpsMob, dpsMobPerTarget,
+      needed, neverWins,
+      mobWins: dpsMob > dpsOne,
+      marginPct: dpsOne > 0 ? (dpsMob / dpsOne - 1) * 100 : 0,
+      ttkOne: rOne, ttkMob: rMob,
+      basic: applyTarget(rawRange(100, C), mob, C.lv, C, elemMult),
+      statWindow: rawRange(100, C)
+    };
+  }
+
+  /* rank every non-boss mob in the level window by EXP/min using its better skill */
+  function rankMobs(C, S, elemMult, opts) {
+    const o = opts || {};
+    const up = o.up == null ? 8 : o.up;
+    const down = o.down == null ? 12 : o.down;
+    const out = [];
+    for (const row of MOBS) {
+      const [name, lv, hp, def, exp] = row;
+      if (/boss/i.test(name)) continue;
+      const gap = lv - C.lv;
+      if (gap > up || gap < -down) continue;
+      const mob = { name, lv, hp, def, exp };
+      const a = analyze(C, S, mob, elemMult, 1);
+      const useMob = a.ttkMob.epm >= a.ttkOne.epm;
+      const pick = useMob ? a.ttkMob : a.ttkOne;
+      out.push({
+        name, lv, hp, def, exp,
+        epm: pick.epm, casts: pick.casts, ttkMs: pick.ms,
+        skill: useMob ? S.mob.name : S.one.name,
+        which: useMob ? 'mob' : 'one'
+      });
+    }
+    out.sort((x, y) => y.epm - x.epm);
+    return out;
+  }
+
+  const api = { CAP, MOBS, mastery, rawRange, levelScale, applyTarget, analyze, rankMobs };
+  if (typeof module !== 'undefined' && module.exports) module.exports = api;
+  root.MSC = api;
+})(typeof window !== 'undefined' ? window : globalThis);
+
+</script>
+<script>
+const $ = id => document.getElementById(id);
+const num = id => parseFloat($(id).value) || 0;
+const fmt0 = n => Math.round(n).toLocaleString();
+const fmt = n => (Math.round(n * 10) / 10).toLocaleString(undefined, { maximumFractionDigits: 1 });
+
+function charCtx() {
+  return {
+    lv: num('plv'), mode: $('mode').value,
+    P: num('P'), Q: num('Q'), WATK: num('WATK'), A: num('AP'), ML: num('ML'),
+    W: parseFloat($('W').value), critRate: num('critRate'), critDmg: num('critDmg'),
+    obsMin: num('obsMin'), obsMax: num('obsMax')
+  };
+}
+function skills() {
+  return {
+    one: { name: $('s1name').value || '1v1', pct: num('s1pct'), hits: num('s1hits') || 1, cap: num('s1cap') || 1, ms: num('s1ms') || 750 },
+    mob: { name: $('sMname').value || 'Mob attack', pct: num('sMpct'), hits: num('sMhits') || 1, cap: num('sMcap') || 1, ms: num('sMms') || 750 }
+  };
+}
+function mobCtx() {
+  return { name: $('mobSel').selectedOptions[0].textContent, lv: num('mlv'), hp: num('mhp'), def: num('mdef'), exp: num('mexp') };
+}
+
+function compute() {
+  const C = charCtx(), S = skills(), mob = mobCtx();
+  const elem = parseFloat($('elem').value);
+  const N = Math.max(1, num('nMobs'));
+  const a = MSC.analyze(C, S, mob, elem, N);
+
+  /* verdict */
+  let v;
+  if (a.neverWins) {
+    v = `<div class="verdict bad"><div class="big">Always ${S.one.name} — mobbing can never win on this mob</div>
+      <div class="dim" style="margin-top:6px">At the ${S.mob.cap}-target cap ${S.mob.name} lands ${fmt0(a.castMob)} per cast vs ${fmt0(a.castOne)} for ${S.one.name}.
+      ${a.mobH.capped ? 'Your damage is hitting the 99,999 per-line cap, which is the only thing that could flip this.' : 'Your 1v1 skill is simply too strong to be replaced by AoE here.'}</div></div>`;
+  } else {
+    v = `<div class="verdict ${a.mobWins ? 'good' : 'bad'}"><div class="big">${a.mobWins
+      ? `Use ${S.mob.name} — ${N} mob${N > 1 ? 's' : ''} is past the break-even`
+      : `Use ${S.one.name} — you need ${a.needed} mob${a.needed > 1 ? 's' : ''} before mobbing wins`}</div>
+      <div class="dim" style="margin-top:6px">Break-even: <b>${a.needed} mob${a.needed > 1 ? 's' : ''}</b> on screen (cap ${S.mob.cap}).
+      At ${N} mob${N > 1 ? 's' : ''}: ${fmt0(a.dpsMob)} DPS mobbing vs ${fmt0(a.dpsOne)} DPS 1v1 (${a.marginPct >= 0 ? '+' : ''}${fmt(a.marginPct)}%).
+      Per-target mobbing DPS is ${fmt0(a.dpsMobPerTarget)} vs ${fmt0(a.dpsOne)} — ratio ${(a.dpsOne / a.dpsMobPerTarget).toFixed(2)}×.</div></div>`;
+  }
+  $('verdictWrap').innerHTML = v;
+
+  /* char readout */
+  $('rangeOut').innerHTML = C.mode === 'observed'
+    ? `<span class="dim">Observed stat-window range:</span> <b>${fmt0(C.obsMin)} – ${fmt0(C.obsMax)}</b> (avg ${fmt0((C.obsMin + C.obsMax) / 2)})`
+    : `<span class="dim">Stat-window range:</span> <b>${fmt0(a.statWindow.min)} – ${fmt0(a.statWindow.max)}</b> (avg ${fmt0(a.statWindow.avg)}) · weapon ×${C.W} · mastery ${C.ML}`;
+
+  /* per-hit table */
+  const rows = [
+    ['basic attack', 100, 1, 1, '—', a.statWindow, a.basic, '—', '—'],
+    [S.one.name, S.one.pct, S.one.hits, S.one.cap, S.one.ms, a.rawOne, a.one, a.castOne, a.dpsOne],
+    [S.mob.name, S.mob.pct, S.mob.hits, S.mob.cap, S.mob.ms, a.rawMob, a.mobH, a.castMob, a.dpsMob]
+  ];
+  let h = `<thead><tr><th class="l">Skill</th><th>Dmg %</th><th>Hits</th><th>Cap</th><th>Cast ms</th>
+    <th>Raw / hit</th><th>On this mob</th><th>Per cast</th><th>DPS</th></tr></thead><tbody>`;
+  rows.forEach(r => {
+    const [name, pct, hits, cap, ms, raw, t, cast, dps] = r;
+    h += `<tr><td class="l">${name}</td><td>${pct}</td><td>${hits}</td><td>${cap}</td><td>${ms}</td>
+      <td>${fmt0(raw.min)}–${fmt0(raw.max)}</td>
+      <td class="v">${fmt0(t.min)}–${fmt0(t.max)} <span class="dim">(avg ${fmt0(t.avg)})</span></td>
+      <td>${cast === '—' ? '—' : fmt0(cast)}</td><td>${dps === '—' ? '—' : fmt0(dps)}</td></tr>`;
+  });
+  h += `</tbody>`;
+  $('perHit').innerHTML = h;
+
+  /* crossover table */
+  let ch = `<thead><tr><th>Mobs hit</th><th>Mobbing DPS</th><th>1v1 DPS</th><th>Use</th></tr></thead><tbody>`;
+  const top = Math.max(S.mob.cap, 3);
+  for (let n = 1; n <= top; n++) {
+    const eff = Math.min(n, S.mob.cap);
+    const d = a.perTargetMob * eff * 1000 / S.mob.ms;
+    ch += `<tr${n === N ? ' style="background:#1e2836"' : ''}><td>${n}${n === N ? ' ←' : ''}${n > S.mob.cap ? ' (capped)' : ''}</td>
+      <td>${fmt0(d)}</td><td>${fmt0(a.dpsOne)}</td>
+      <td class="${d > a.dpsOne ? 'ok' : 'no'}">${d > a.dpsOne ? S.mob.name : S.one.name}</td></tr>`;
+  }
+  ch += `</tbody>`;
+  $('crossTable').innerHTML = ch;
+
+  /* best mobs */
+  const list = MSC.rankMobs(C, S, elem, { up: 8, down: 12 });
+  let bh = `<thead><tr><th class="l">Mob</th><th>Lv</th><th>HP</th><th>P.DEF</th><th>EXP</th>
+    <th>Casts</th><th>Kill time</th><th>EXP/min</th><th class="l">Skill</th></tr></thead><tbody>`;
+  list.slice(0, 15).forEach((m, i) => {
+    bh += `<tr${i === 0 ? ' style="background:#1e2836"' : ''}><td class="l">${m.name}</td><td>${m.lv}</td>
+      <td>${fmt0(m.hp)}</td><td>${m.def}</td><td>${fmt0(m.exp)}</td><td>${m.casts}</td>
+      <td>${(m.ttkMs / 1000).toFixed(1)}s</td><td class="v">${fmt0(m.epm)}</td>
+      <td class="l ${m.which === 'mob' ? 'wa' : 'dim'}">${m.skill}</td></tr>`;
+  });
+  bh += `</tbody>`;
+  $('bestTable').innerHTML = bh;
+  $('bestNote').textContent = `Casts to kill = ceil(HP ÷ per-cast damage), so HP that lands just under a multiple of your cast damage ranks abnormally well (no overkill). Bosses excluded. ${list.length} mobs inside your level window (${C.lv - 12} to ${C.lv + 8}).`;
+}
+
+/* wiring */
+const mobSel = $('mobSel');
+mobSel.innerHTML = MSC.MOBS.map((m, i) => `<option value="${i}">Lv${m[1]} · ${m[0]} — HP ${m[2].toLocaleString()} · EXP ${m[4].toLocaleString()}</option>`).join('');
+mobSel.value = MSC.MOBS.findIndex(m => m[0] === 'Curse Eye');
+
+function loadMob() {
+  const [, lv, hp, def, exp] = MSC.MOBS[+mobSel.value];
+  $('mlv').value = lv; $('mhp').value = hp; $('mdef').value = def; $('mexp').value = exp;
+}
+mobSel.addEventListener('change', () => { loadMob(); compute(); });
+$('mode').addEventListener('change', () => {
+  const obs = $('mode').value === 'observed';
+  $('statsBlock').style.display = obs ? 'none' : 'block';
+  $('obsBlock').style.display = obs ? 'block' : 'none';
+  compute();
+});
+function wirePreset(selId, p) {
+  $(selId).addEventListener('change', () => {
+    const v = $(selId).value; if (!v) return;
+    const [pct, hits, cap, ms] = v.split(',');
+    $(p + 'pct').value = pct; $(p + 'hits').value = hits; $(p + 'cap').value = cap; $(p + 'ms').value = ms;
+    compute();
+  });
+}
+wirePreset('s1preset', 's1'); wirePreset('sMpreset', 'sM');
+['plv','P','Q','WATK','AP','ML','W','critRate','critDmg','obsMin','obsMax',
+ 's1name','s1pct','s1hits','s1cap','s1ms','sMname','sMpct','sMhits','sMcap','sMms',
+ 'mlv','mhp','mdef','mexp','nMobs','elem'].forEach(id => {
+  $(id).addEventListener('change', compute);
+  $(id).addEventListener('input', compute);
+});
+$('go').addEventListener('click', compute);
+loadMob();
+compute();
+</script>
+</body>
+</html>
