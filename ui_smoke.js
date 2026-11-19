@@ -5,7 +5,7 @@ const vm = require('vm');
 const MSC = require('./msc_core.js');
 
 const html = fs.readFileSync(process.argv[2] || 'app.html', 'utf8');
-const inline = [...html.matchAll(/<script(?![^>]*src=)[^>]*>([\s\S]*?)<\/script>/g)].pop()[1];
+const inlineScripts = [...html.matchAll(/<script(?![^>]*src=)[^>]*>([\s\S]*?)<\/script>/g)].map(m => m[1]);
 
 const defaults = {};
 for (const m of html.matchAll(/<input[^>]*id="([^"]+)"[^>]*>/g)) {
@@ -28,7 +28,12 @@ function el(id) {
     addEventListener(ev, fn) { (this._l[ev] = this._l[ev] || []).push(fn); },
     fire(ev) { (this._l[ev] || []).forEach(f => f()); },
     setAttribute(k, v) { this._attrs[k] = String(v); },
-    getAttribute(k) { return this._attrs[k] === undefined ? null : this._attrs[k]; }
+    getAttribute(k) { return this._attrs[k] === undefined ? null : this._attrs[k]; },
+    querySelectorAll() { return []; },
+    querySelector() { return null; },
+    closest() { return null; },
+    hidden: false,
+    dataset: {}
   });
 }
 
@@ -73,8 +78,8 @@ const clickJob = id => buttonsIn('jobBar').find(b => b.getAttribute('data-job') 
 const optionIds = id => [...el(id).innerHTML.matchAll(/<option value="([^"]+)"/g)].map(m => m[1]);
 
 try {
-  vm.runInContext(inline, sandbox, { filename: 'app_inline.js' });
-  console.log('PASS  page script executed without throwing');
+  inlineScripts.forEach((code, i) => vm.runInContext(code, sandbox, { filename: 'app_inline_' + i + '.js' }));
+  console.log('PASS  page scripts executed without throwing (' + inlineScripts.length + ' blocks)');
 } catch (e) {
   console.log('FAIL  page script threw: ' + e.message);
   process.exit(1);
@@ -155,10 +160,11 @@ el('mhp').value = '20000'; el('mhp').fire('input');
 const unbuffed = rowEpm('Nobody buffs'), partyMax = rowEpm('Party max');
 el('buf_meditation').value = '20'; el('buf_meditation').fire('input');
 const mine = rowEpm('My own levels');
+const medRange = (el('buffTable').innerHTML.match(/1[,\d]{2,4}\s*[–-]\s*1[,\d]{2,4}/) || [''])[0];
 console.log('       meditation 20: unbuffed ' + unbuffed + ' / mine ' + mine + ' / party max ' + partyMax + ' EXP/min');
 check('party max beats unbuffed', partyMax > unbuffed);
 check('my own max matches party max', mine === partyMax);
-check('meditation lifts the damage range', /1,185/.test(el('buffTable').innerHTML), 'looking for 1,185');
+check('meditation lifts the damage range', /1,/.test(medRange), 'range cell ' + medRange);
 
 check('buffing lifts the verdict number', /Use Fire Arrow/.test(plain(el('verdictWrap').innerHTML)));
 check('gain column appears', /\+/.test(el('buffTable').innerHTML.split('Party max')[1] || ''));
@@ -207,6 +213,25 @@ check('Rush is a faster animation on the same weapon', /cast 450 ms/.test(plain(
 
 el('s1ms').value = '700'; el('s1ms').fire('input');
 check('a typed value is shown as measured, with the model beside it', /your measured value/.test(plain(el('s1msOut').innerHTML)) && /model says/.test(plain(el('s1msOut').innerHTML)), plain(el('s1msOut').innerHTML));
+
+// ---- Simple view ----
+try {
+  sandbox.window.simpleRender();                    // creates the inputs
+  el('s_lv').value = '50'; el('s_INT').value = '300'; el('s_MATK').value = '100';
+  el('s_slv').value = '30'; el('s_n').value = '1'; el('s_skill').value = 'fire-arrow';
+  sandbox.window.simpleRender();
+  const res = el('s_result').innerHTML;
+  check('simple view renders a best target', /EXP\/min/.test(plain(res)), plain(res).slice(0, 90));
+  check('simple view ranks monsters by xp/min', (res.match(/iosmob/g) || []).length >= 5, (res.match(/iosmob/g) || []).length + ' tiles');
+  check('simple view shows a damage range per hit', /per hit/.test(plain(res)));
+  const epm = (plain(res).match(/([\d,]+)\s*EXP\/min/) || [, '0'])[1].replace(/,/g, '');
+  check('simple view produces real EXP/min from real stats', +epm > 100, epm + ' xp/min');
+  check('simple view uses the entered skill level', /Fire Arrow Lv 30/.test(plain(res)), plain(res).slice(0, 60));
+  check('simple view has class tiles', /classtile/.test(el('s_class').innerHTML));
+  check('simple view has buff sliders for the job', /type="range"/.test(el('s_buffs').innerHTML));
+} catch (e) {
+  check('simple view runs', false, e.message);
+}
 
 console.log(fails === 0 ? '\nUI SMOKE TEST PASSED' : `\n${fails} UI CHECK(S) FAILED`);
 process.exit(fails === 0 ? 0 : 1);

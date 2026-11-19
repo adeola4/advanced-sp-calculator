@@ -57,6 +57,55 @@
   .note{font-size:11.5px;color:var(--dim);margin-top:10px;line-height:1.5}
   .scroll{max-height:460px;overflow:auto}
   .tag{display:inline-block;font-size:10.5px;padding:1px 6px;border-radius:99px;border:1px solid var(--line);color:var(--dim);margin-left:6px}
+
+.tabs{display:flex;gap:6px;background:rgba(255,255,255,.05);padding:6px;border-radius:16px;width:max-content;margin:0 0 16px}
+.tabs button{border:0;background:transparent;color:var(--fg,#dfe7ef);padding:9px 20px;border-radius:11px;font-size:13.5px;font-weight:600;cursor:pointer}
+.tabs button.on{background:#2b6c92;color:#fff}
+.mobfilter{display:flex;gap:8px;align-items:center;margin-top:6px}
+.mobfilter input{flex:1;padding:8px 10px;border-radius:9px;border:1px solid var(--line,rgba(255,255,255,.12));background:rgba(255,255,255,.04);color:inherit;font-size:13px}
+.mobgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(94px,1fr));gap:8px;max-height:300px;overflow:auto;padding:4px 2px;margin-top:8px}
+.mobtile{display:flex;flex-direction:column;align-items:center;gap:2px;padding:9px 4px 7px;border-radius:13px;border:1px solid var(--line,rgba(255,255,255,.12));background:rgba(255,255,255,.03);cursor:pointer;font-size:11px;line-height:1.2;text-align:center;color:inherit;transition:transform .08s ease}
+.mobtile:hover{transform:translateY(-1px)}
+.mobtile.on{border-color:var(--accent,#4aa3d1);box-shadow:0 0 0 1px var(--accent,#4aa3d1) inset;background:rgba(43,108,146,.22)}
+.mobtile .ico{font-size:23px;line-height:1}
+.mobtile .lv{opacity:.55;font-size:10px}
+
+/* ---------- Simple view: iOS look ---------- */
+.ios{--blue:#0a84ff;--sub:#6b7280;--hair:#eff0f3;background:linear-gradient(180deg,#f2f5fa,#e6ebf3);color:#0b0f14;border-radius:30px;padding:20px;margin-top:6px;
+  font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+.ios *{box-sizing:border-box}
+.ioscard{background:#fff;border-radius:22px;padding:16px;margin-bottom:12px;box-shadow:0 1px 2px rgba(16,24,40,.05),0 10px 26px rgba(16,24,40,.07)}
+.ios h2{margin:0;font-size:26px;letter-spacing:-.6px;font-weight:700}
+.ios .hint{font-size:12.5px;color:var(--sub);margin-top:3px;line-height:1.4}
+.classrow{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+@media(max-width:560px){.classrow{grid-template-columns:repeat(3,1fr)}}
+.classtile{display:flex;flex-direction:column;align-items:center;gap:5px;padding:11px 4px;border-radius:18px;border:2px solid transparent;background:#f5f6f9;cursor:pointer;font-size:11px;font-weight:600;color:#111;transition:all .12s ease}
+.classtile .ico{font-size:26px;line-height:1}
+.classtile.on{border-color:var(--blue);background:#eaf4ff;box-shadow:0 6px 16px rgba(10,132,255,.18)}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+.chips button{border-radius:999px;padding:7px 13px;font-size:12px;font-weight:600;background:#f5f6f9;color:#111;border:1px solid #e8eaee;cursor:pointer}
+.chips button.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.irow{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--hair)}
+.irow:last-child{border-bottom:0}
+.irow label{font-size:13.5px;color:var(--sub);font-weight:500}
+.irow input[type=number]{width:104px;text-align:right;border:0;background:#f3f4f7;border-radius:11px;padding:9px 11px;font-size:15px;font-weight:600;color:#0b0f14}
+.irow input[type=number]:focus{outline:2px solid #bfdbfe;background:#fff}
+.buffrow{padding:8px 0;border-bottom:1px solid var(--hair)}
+.buffrow:last-child{border-bottom:0}
+.buffrow .bhead{display:flex;justify-content:space-between;font-size:13px;margin-bottom:6px}
+.buffrow .bhead b{font-weight:600}
+.buffrow input[type=range]{width:100%;accent-color:var(--blue)}
+.bigres{display:flex;align-items:center;gap:14px}
+.bigres .ico{font-size:46px;line-height:1}
+.bigres .num{font-size:30px;font-weight:700;letter-spacing:-.8px}
+.bigres .lbl{font-size:12.5px;color:var(--sub)}
+.iosgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px;margin-top:12px}
+.iosmob{display:flex;flex-direction:column;align-items:center;gap:2px;padding:10px 4px;border-radius:16px;background:#f7f8fa;border:2px solid transparent;cursor:pointer;font-size:10.5px;line-height:1.2;text-align:center;color:#111}
+.iosmob.on{border-color:var(--blue);background:#eaf4ff}
+.iosmob .ico{font-size:24px}
+.iosmob .epm{font-size:9.5px;color:var(--sub)}
+.verdict{font-size:14px;line-height:1.5;margin-top:10px}
+.pill{display:inline-block;padding:3px 9px;border-radius:999px;background:#eaf4ff;color:#0a6cd0;font-size:11.5px;font-weight:600;margin-right:6px}
 </style>
 </head>
 <body>
@@ -64,7 +113,8 @@
   <h1>Advanced SP Calculator — MapleStory Classic World</h1>
   <p>Exact MSCW damage per hit and per element — then which of your two skills to actually cast on this monster, with the MP bill attached.</p>
 </header>
-<main>
+<nav class="tabs"><button class="tab on" data-view="adv">Advanced</button><button class="tab" data-view="simple">Simple</button></nav>
+<main id="viewAdv">
 
 <div class="classbar" id="classBar"></div>
 <div class="jobbar" id="jobBar"></div>
@@ -135,11 +185,16 @@
 
   <section class="panel">
     <h2>3 · Target &amp; potion bill</h2>
-    <div class="f"><label>Monster</label><select id="mobSel"></select></div>
-    <div class="f"><label>Monster level</label><input id="mlv" type="number" value="33"></div>
-    <div class="f"><label>HP</label><input id="mhp" type="number" value="1001"></div>
-    <div class="f"><label>P.DEF</label><input id="mdef" type="number" value="20"></div>
-    <div class="f"><label>EXP</label><input id="mexp" type="number" value="63"></div>
+    <div class="f" style="display:none"><select id="mobSel"></select></div>
+    <div class="mobfilter"><input id="mobFilter" placeholder="Filter monsters…"><span class="mini" id="mobCount"></span></div>
+    <div class="mobgrid" id="mobGrid"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px">
+      <div class="f"><label>Level</label><input id="mlv" type="number" value="33"></div>
+      <div class="f"><label>HP</label><input id="mhp" type="number" value="1001"></div>
+      <div class="f"><label>P.DEF</label><input id="mdef" type="number" value="20"></div>
+      <div class="f"><label>M.DEF</label><input id="mmdef" type="number" value="10"></div>
+      <div class="f"><label>EXP</label><input id="mexp" type="number" value="63"></div>
+    </div>
     <div class="f"><label>Mobs in range</label><input id="nMobs" type="number" value="1" min="1" max="15"></div>
     <h3>Element state of this monster</h3>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
@@ -204,32 +259,27 @@
 
   /* --- monsters: name, level, HP, P.DEF, EXP ---------------------------------
      Element states come from the MSCW monster database (weak / resist / immune). */
+  /* [name, level, HP, P.DEF, M.DEF, EXP] — defences measured off the MSCW calculator
+     by reading a neutral attack's post-defence line for every monster in its dropdown. */
   const MOB_ROWS = [
-    ["Snail", 1, 45, 0, 2], ["Blue Snail", 2, 51, 0, 4], ["Shroom", 3, 62, 0, 6], ["Red Snail", 4, 68, 15, 8],
-    ["Stump", 5, 133, 30, 10], ["Slime", 6, 115, 10, 12], ["Pig", 7, 128, 0, 13], ["Orange Mushroom", 8, 142, 0, 15],
-    ["Ribbon Pig", 10, 172, 0, 19], ["Dark Stump", 11, 236, 30, 21], ["Octopus", 12, 191, 0, 23],
-    ["Green Mushroom", 14, 233, 0, 26], ["Bubbling", 15, 259, 20, 28], ["Axe Stump", 17, 371, 30, 32],
-    ["Blue Mushroom", 19, 342, 10, 35], ["Ghost Stump", 19, 404, 15, 35], ["Stirge", 20, 296, 5, 37],
-    ["Jr. Necki", 21, 272, 15, 39], ["Horny Mushroom", 22, 403, 10, 41], ["Dark Axe Stump", 23, 547, 30, 43],
-    ["Wooden Mask", 23, 462, 0, 43], ["Zombie Mushroom", 24, 436, 10, 45], ["Rocky Mask", 24, 479, 30, 45],
-    ["Wild Boar", 25, 510, 20, 46], ["Evil Eye", 27, 606, 10, 50], ["Fairy", 29, 593, 0, 54],
-    ["Ligator", 31, 853, 10, 58], ["Fire Boar", 32, 842, 10, 60], ["Curse Eye", 33, 1001, 20, 63],
-    ["Jr. Wraith", 34, 982, 30, 66], ["Jr. Boogie", 35, 1395, 50, 69], ["Lupin", 37, 1336, 5, 75],
-    ["Lorang", 38, 1714, 20, 78], ["Glowshroom", 39, 1377, 15, 82], ["Cold Eye", 40, 1894, 10, 85],
-    ["Raffle", 40, 1722, 20, 85], ["Zombie Lupin", 41, 1774, 5, 89], ["Golden Stirge", 42, 1278, 15, 93],
-    ["Aqumander", 43, 2069, 20, 98], ["Skeledog", 44, 2134, 15, 102], ["Copper Drake", 45, 2379, 15, 107],
-    ["Echopus", 45, 2163, 10, 107], ["Tortie", 46, 2226, 30, 111], ["Rafflesia", 47, 2285, 20, 117],
-    ["Mummydog", 47, 2513, 15, 117], ["Wraith", 48, 2350, 30, 122], ["Clang", 49, 2657, 20, 127],
-    ["Drake", 50, 2950, 15, 133], ["Duskmander", 50, 2682, 10, 133], ["Croco", 52, 3136, 10, 146],
-    ["Myewood", 54, 3924, 20, 160], ["Malady", 55, 2998, 5, 167], ["Stone Golem", 56, 5134, 25, 175],
-    ["Rotten Mushroom", 56, 3520, 20, 183], ["Skeleton Soldier", 57, 3872, 15, 183],
-    ["Dark Stone Golem", 58, 5428, 5, 192], ["Sporewood", 59, 4834, 20, 201], ["Red Drake", 60, 5184, 15, 211],
-    ["Wild Kargo", 62, 5057, 30, 231], ["Officer Skeleton", 63, 5976, 15, 242], ["Tauromacis", 70, 9328, 25, 337],
-    ["Commander Skeleton", 73, 11915, 15, 390], ["Taurospear", 75, 12535, 5, 429],
-    ["Mano (boss)", 20, 7420, 20, 148], ["King Slime (boss)", 32, 16820, 15, 2400],
-    ["Stumpy (boss)", 35, 19220, 20, 276], ["Mushmom (boss)", 40, 34440, 15, 340],
-    ["Shade (boss)", 48, 47000, 30, 488], ["Zombie Mushmom (boss)", 55, 66640, 10, 668],
-    ["Rotten Mushmom (boss)", 60, 86400, 20, 844], ["Jr. Balrog (boss)", 80, 325400, 15, 2188]
+    ["Snail", 1, 45, 0, 0, 2], ["Blue Snail", 2, 51, 0, 0, 4], ["Shroom", 3, 62, 0, 0, 6], ["Red Snail", 4, 68, 0, 15, 8],
+    ["Stump", 5, 133, 30, 0, 10], ["Slime", 6, 115, 10, 5, 12], ["Pig", 7, 128, 0, 0, 13], ["Orange Mushroom", 8, 142, 0, 0, 15],
+    ["Ribbon Pig", 10, 172, 0, 0, 19], ["Dark Stump", 11, 236, 30, 0, 21], ["Octopus", 12, 191, 0, 15, 23], ["Green Mushroom", 14, 233, 0, 20, 26],
+    ["Bubbling", 15, 259, 20, 10, 28], ["Axe Stump", 17, 371, 30, 0, 32], ["Blue Mushroom", 19, 342, 10, 10, 35], ["Ghost Stump", 19, 404, 15, 15, 35],
+    ["Stirge", 20, 296, 5, 15, 37], ["Jr. Necki", 21, 272, 15, 5, 39], ["Horny Mushroom", 22, 403, 10, 0, 41], ["Dark Axe Stump", 23, 547, 30, 0, 43],
+    ["Wooden Mask", 23, 462, 0, 30, 43], ["Zombie Mushroom", 24, 436, 10, 20, 45], ["Rocky Mask", 24, 479, 30, 0, 45], ["Wild Boar", 25, 510, 20, 10, 46],
+    ["Evil Eye", 27, 606, 10, 20, 50], ["Fairy", 29, 593, 0, 501, 54], ["Ligator", 31, 853, 10, 0, 58], ["Fire Boar", 32, 842, 10, 0, 60],
+    ["Curse Eye", 33, 1001, 20, 10, 63], ["Jr. Wraith", 34, 982, 30, 0, 66], ["Jr. Boogie", 35, 1395, 50, 50, 69], ["Lupin", 37, 1336, 5, 20, 75],
+    ["Lorang", 38, 1714, 20, 10, 78], ["Glowshroom", 39, 1377, 15, 5, 82], ["Cold Eye", 40, 1894, 10, 20, 85], ["Raffle", 40, 1722, 20, 10, 85],
+    ["Zombie Lupin", 41, 1774, 5, 20, 89], ["Golden Stirge", 42, 1278, 15, 15, 93], ["Aqumander", 43, 2069, 20, 10, 98], ["Skeledog", 44, 2134, 15, 15, 102],
+    ["Copper Drake", 45, 2379, 15, 15, 107], ["Echopus", 45, 2163, 10, 20, 107], ["Tortie", 46, 2226, 30, 0, 111], ["Rafflesia", 47, 2285, 20, 10, 117],
+    ["Mummydog", 47, 2513, 15, 15, 117], ["Wraith", 48, 2350, 30, 0, 122], ["Clang", 49, 2657, 20, 10, 127], ["Drake", 50, 2950, 15, 15, 133],
+    ["Duskmander", 50, 2682, 10, 20, 133], ["Croco", 52, 3136, 10, 0, 146], ["Myewood", 54, 3924, 20, 10, 160], ["Malady", 55, 2998, 5, 20, 167],
+    ["Stone Golem", 56, 5134, 25, 5, 175], ["Rotten Mushroom", 56, 3520, 20, 5, 183], ["Skeleton Soldier", 57, 3872, 15, 15, 183], ["Dark Stone Golem", 58, 5428, 5, 25, 192],
+    ["Sporewood", 59, 4834, 20, 10, 201], ["Red Drake", 60, 5184, 15, 15, 211], ["Wild Kargo", 62, 5057, 30, 0, 231], ["Officer Skeleton", 63, 5976, 15, 15, 242],
+    ["Tauromacis", 70, 9328, 25, 5, 337], ["Commander Skeleton", 73, 11915, 15, 15, 390], ["Taurospear", 75, 12535, 5, 25, 429], ["Mano (boss)", 20, 7420, 20, 20, 148],
+    ["King Slime (boss)", 32, 16820, 15, 15, 2400], ["Stumpy (boss)", 35, 19220, 20, 20, 276], ["Mushmom (boss)", 40, 34440, 15, 15, 340], ["Shade (boss)", 48, 47000, 30, 30, 488],
+    ["Zombie Mushmom (boss)", 55, 66640, 10, 10, 668], ["Rotten Mushmom (boss)", 60, 86400, 20, 20, 844], ["Jr. Balrog (boss)", 80, 325400, 15, 15, 2188],
   ];
 
   const MOB_ELEM = {
@@ -257,8 +307,8 @@
     "Taurospear": { ice: "weak", lightning: "resist" }
   };
 
-  const MOBS = MOB_ROWS.map(([name, lv, hp, def, exp]) =>
-    ({ name, lv, hp, def, exp, elem: MOB_ELEM[name] || {} }));
+  const MOBS = MOB_ROWS.map(([name, lv, hp, pdef, mdef, exp]) =>
+    ({ name, lv, hp, pdef, mdef, def: pdef, exp, elem: MOB_ELEM[name] || {} }));
 
   /* --- skill library --------------------------------------------------------
      Level tables transcribed from the MSCW skill database (henesys.gg skill pages):
@@ -407,19 +457,32 @@
   }
 
   /* raw -> on-mob per-hit numbers */
-  function applyTarget(raw, mob, playerLv, C, elemMult) {
-    const edef = Math.max(0, mob.def || 0);
+  /* Effective defence uses the MSCW order: flat bonuses first, then a percent bonus on base def. */
+  function effectiveDef(mob, klass) {
+    const base = Math.max(0, (klass === "magic"
+      ? (mob.mdef != null ? mob.mdef : mob.def)
+      : (mob.pdef != null ? mob.pdef : mob.def)) || 0);
+    const flat = mob.defFlat || 0, pct = mob.defPct || 0;
+    return Math.max(0, flat + Math.trunc((1 + pct / 100) * base));
+  }
+
+  /* MSCW modifier order: defence, element, level gap, crit. The DISPLAYED range is the
+     non-crit roll — crits are a separate roll per hit, so they never widen the range. */
+  function applyTarget(raw, mob, playerLv, C, elemMult, klass) {
+    const edef = effectiveDef(mob, klass === undefined ? C.klass : klass);
     const defScale = 100 / (edef + 100);
     const ls = levelScale(playerLv, mob.lv);
     const c = (C.critRate || 0) / 100, d = (C.critDmg || 0) / 100;
-    const crit = 1 + c * d;
     const e = elemMult == null ? 1 : elemMult;
-    const post = v => Math.min(CAP, Math.max(1, v * defScale * e * ls * crit));
-    const rawMaxPost = raw.max * defScale * e * ls * crit;
+    const post = v => Math.min(CAP, Math.max(1, v * defScale * e * ls));
+    const critHit = v => Math.min(CAP, Math.max(1, post(v) * (1 + d)));
+    const rawMaxPost = raw.max * defScale * e * ls;
     return {
-      // final on-screen damage is an integer per line
       min: Math.trunc(post(raw.min)), max: Math.trunc(post(raw.max)), avg: post(raw.avg),
-      defScale, ls, elemMult: e, crit,
+      critMin: Math.trunc(critHit(raw.min)), critMax: Math.trunc(critHit(raw.max)),
+      expected: post(raw.avg) * (1 + c * d),      // average hit including crit rolls
+      critRate: c, critDmg: d, critMult: 1 + d, expectedCritMult: 1 + c * d,
+      edef, defScale, ls, elemMult: e,
       capped: rawMaxPost > CAP,
       overflowPct: rawMaxPost > CAP ? (rawMaxPost / CAP - 1) * 100 : 0
     };
@@ -432,10 +495,10 @@
     const n = Math.max(1, N || 1);
     const em = elementMult(mob, sk.element);
     const raw = rawRange(sk, C);
-    const hit = applyTarget(raw, mob, C.lv, C, em);
+    const hit = applyTarget(raw, mob, C.lv, C, em, sk.klass || C.klass);
 
     const targets = Math.min(n, sk.targets || 1);
-    const directPerCast = (sk.hits || 1) * hit.avg * targets;
+    const directPerCast = (sk.hits || 1) * hit.expected * targets;
 
     // DoT: quoted as "% of a basic attack", ignores monster defence (MSCW rule), keeps the element
     let dotTotal = 0, dotApplied = 0;
@@ -921,7 +984,7 @@ function mob() {
   [['fire', 'eFire'], ['poison', 'ePoison'], ['ice', 'eIce'], ['lightning', 'eLightning']].forEach(([el, id]) => {
     const v = $(id).value; if (v) elem[el] = v;
   });
-  return { name: base.name, lv: num('mlv'), hp: num('mhp'), def: num('mdef'), exp: num('mexp'), elem };
+  return { name: base.name, lv: num('mlv'), hp: num('mhp'), pdef: num('mdef'), mdef: num('mmdef'), def: num('mdef'), exp: num('mexp'), elem };
 }
 
 function compute() {
@@ -1071,7 +1134,7 @@ mobSel.value = MSC.MOBS.findIndex(m => m.name === 'Curse Eye');
 
 function loadMob() {
   const m = MSC.MOBS[+mobSel.value];
-  $('mlv').value = m.lv; $('mhp').value = m.hp; $('mdef').value = m.def; $('mexp').value = m.exp;
+  $('mlv').value = m.lv; $('mhp').value = m.hp; $('mdef').value = m.pdef; $('mmdef').value = m.mdef; $('mexp').value = m.exp;
   ['fire', 'poison', 'ice', 'lightning'].forEach((el, i) => {
     const id = ['eFire', 'ePoison', 'eIce', 'eLightning'][i];
     $(id).value = (m.elem || {})[el] || '';
@@ -1275,5 +1338,270 @@ loadMob();
 syncClass();
 renderBuffs();
 </script>
+<main id="viewSimple" hidden>
+<div class="ios">
+  <div class="ioscard">
+    <h2>Simple</h2>
+    <div class="hint">Class → your numbers → the monster worth your time. Nothing else.</div>
+  </div>
+
+  <div class="ioscard">
+    <div class="classrow" id="s_class"></div>
+    <div class="chips" id="s_job"></div>
+  </div>
+
+  <div class="ioscard" id="s_inputs"></div>
+  <div class="ioscard" id="s_buffs"></div>
+  <div class="ioscard" id="s_result"></div>
+</div>
+</main>
+
+<script>
+/* ============ shared monster icons ============ */
+window.mobIcon = function (n) {
+  const map = [
+    [/mushmom/i, '👑'], [/mushroom|glowshroom|sporewood/i, '🍄'], [/snail/i, '🐌'],
+    [/boar|kargo/i, '🐗'], [/pig/i, '🐷'], [/stump/i, '🪵'], [/slime/i, '🟢'],
+    [/octopus|echopus|bubbling|aqua|lorang|tortie/i, '🐙'], [/axe/i, '🪓'],
+    [/ghost|wraith/i, '👻'], [/stirge|flyeye/i, '🦇'], [/ligator|croco|necki/i, '🐊'],
+    [/mask/i, '🎭'], [/golem|rocky|stone/i, '🗿'], [/zombie|mummydog|skeleton|skeledog/i, '💀'],
+    [/evil eye|curse eye|cold eye/i, '👁'], [/fairy|raffle/i, '🧚'], [/lupin/i, '🐺'],
+    [/drake|balrog/i, '🐉'], [/clang|iron/i, '🔔'], [/tauro/i, '🐂'], [/mano/i, '🐵']
+  ];
+  for (const [re, e] of map) if (re.test(n)) return e;
+  return '👾';
+};
+
+/* ============ Advanced: monster grid ============ */
+(function () {
+  const sel = document.getElementById('mobSel');
+  const grid = document.getElementById('mobGrid');
+  const filt = document.getElementById('mobFilter');
+  const cnt = document.getElementById('mobCount');
+  if (!sel || !grid) return;
+  function draw() {
+    const q = (filt.value || '').toLowerCase().trim();
+    const items = MSC.MOBS.map((m, i) => ({ m, i }))
+      .filter(o => !q || o.m.name.toLowerCase().includes(q));
+    grid.innerHTML = items.map(o =>
+      `<button class="mobtile${String(sel.value) === String(o.i) ? ' on' : ''}" data-i="${o.i}">
+         <span class="ico">${window.mobIcon(o.m.name)}</span>
+         <span>${o.m.name}</span><span class="lv">Lv ${o.m.lv}</span>
+       </button>`).join('');
+    cnt.textContent = items.length + ' monsters';
+  }
+  grid.addEventListener('click', e => {
+    const b = e.target.closest('.mobtile');
+    if (!b) return;
+    sel.value = b.getAttribute('data-i');
+    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    draw();
+  });
+  filt.addEventListener('input', draw);
+  sel.addEventListener('change', draw);
+  draw();
+})();
+
+/* ============ tabs ============ */
+(function () {
+  const adv = document.getElementById('viewAdv'), sim = document.getElementById('viewSimple');
+  document.querySelectorAll('.tabs .tab').forEach(b => b.addEventListener('click', () => {
+    document.querySelectorAll('.tabs .tab').forEach(x => x.classList.toggle('on', x === b));
+    const v = b.getAttribute('data-view');
+    adv.hidden = v !== 'adv';
+    sim.hidden = v !== 'simple';
+    if (v === 'simple' && window.simpleRender) window.simpleRender();
+  }));
+})();
+</script>
+
+<script>
+/* ============ Simple view ============ */
+(function () {
+  const $s = id => document.getElementById(id);
+  const CLASS_ICON = { beginner: '🧑‍🌾', warrior: '⚔️', magician: '🔮', bowman: '🏹', thief: '🗡️' };
+  const numf = id => { const v = parseFloat(($s(id) || {}).value); return isNaN(v) ? 0 : v; };
+
+  let klass = 'magician', job = 'fp';
+  const V = { lv: 50, STR: 4, DEX: 4, INT: 300, LUK: 4, MATK: 100, WATK: 47, dmin: 0, dmax: 0, n: 1 };
+  const BUFF = {};
+
+  function isMagic() { return MSC.classById(klass).klass === 'magic'; }
+
+  function drawClass() {
+    $s('s_class').innerHTML = MSC.CLASSES.map(c =>
+      `<button class="classtile${c.id === klass ? ' on' : ''}" data-c="${c.id}">
+         <span class="ico">${CLASS_ICON[c.id]}</span>${c.name}</button>`).join('');
+    const cur = MSC.classById(klass);
+    $s('s_job').innerHTML = cur.jobs.length > 1 ? cur.jobs.map(j =>
+      `<button class="${j.id === job ? 'on' : ''}" data-j="${j.id}">${j.name}</button>`).join('') : '';
+    [...$s('s_class').querySelectorAll('button')].forEach(b => b.addEventListener('click', () => {
+      klass = b.getAttribute('data-c');
+      job = MSC.classById(klass).jobs[0].id;
+      BUFFS_RESET();
+      drawClass(); drawInputs(); compute();
+    }));
+    [...$s('s_job').querySelectorAll('button')].forEach(b => b.addEventListener('click', () => {
+      job = b.getAttribute('data-j');
+      BUFFS_RESET();
+      drawClass(); drawInputs(); compute();
+    }));
+  }
+
+  function BUFFS_RESET() { Object.keys(BUFF).forEach(k => delete BUFF[k]); }
+
+  function row(id, label, val, step) {
+    return `<div class="irow"><label>${label}</label><input id="${id}" type="number" value="${val}" ${step ? 'step="' + step + '"' : ''}></div>`;
+  }
+
+  function drawInputs() {
+    const magic = isMagic();
+    const skills = MSC.skillsFor(job);
+    const pick = skills.indexOf(MSC.JOB_DEFAULTS[job][0]) >= 0 ? MSC.JOB_DEFAULTS[job][0] : skills[0];
+    let h = row('s_lv', 'Your level', V.lv);
+    if (magic) {
+      h += row('s_MATK', 'Magic attack', V.MATK);
+    } else {
+      h += row('s_dmin', 'Damage range — min', V.dmin) + row('s_dmax', 'Damage range — max', V.dmax);
+      h += row('s_WATK', 'W.ATK (only if range is blank)', V.WATK);
+    }
+    h += row('s_STR', 'STR', V.STR) + row('s_DEX', 'DEX', V.DEX) + row('s_INT', 'INT', V.INT) + row('s_LUK', 'LUK', V.LUK);
+    h += `<div class="irow"><label>Main attack</label>
+      <select id="s_skill" style="border:0;background:#f3f4f7;border-radius:11px;padding:9px 11px;font-size:14px;font-weight:600">
+        ${skills.map(id => `<option value="${id}"${id === (V.skill && skills.includes(V.skill) ? V.skill : pick) ? ' selected' : ''}>${MSC.SKILLS[id].name}</option>`).join('')}
+      </select></div>`;
+    h += row('s_slv', 'Skill level', V.slv || MSC.SKILLS[pick].maxLevel);
+    h += row('s_n', 'Monsters in range', V.n);
+    $s('s_inputs').innerHTML = h;
+    $s('s_inputs').querySelectorAll('input,select').forEach(el => {
+      el.addEventListener('input', () => { readInputs(); if (el.id === 's_skill') { drawInputs(); } compute(); });
+      el.addEventListener('change', () => { readInputs(); if (el.id === 's_skill') { drawInputs(); } compute(); });
+    });
+    drawBuffs();
+  }
+
+  function readInputs() {
+    V.lv = numf('s_lv') || 1;
+    V.MATK = numf('s_MATK'); V.WATK = numf('s_WATK');
+    V.dmin = numf('s_dmin'); V.dmax = numf('s_dmax');
+    V.STR = numf('s_STR'); V.DEX = numf('s_DEX'); V.INT = numf('s_INT'); V.LUK = numf('s_LUK');
+    V.n = Math.max(1, numf('s_n') || 1);
+    V.skill = $s('s_skill') ? $s('s_skill').value : null;
+    V.slv = numf('s_slv') || 1;
+  }
+
+  function drawBuffs() {
+    const ids = MSC.buffsFor(klass, job);
+    if (!ids.length) { $s('s_buffs').innerHTML = '<div class="hint">No buffs to enter for this job.</div>'; return; }
+    $s('s_buffs').innerHTML = '<div style="font-size:13px;font-weight:600;margin-bottom:6px">Buff levels</div>' + ids.map(id => {
+      const b = MSC.BUFFS[id];
+      const v = BUFF[id] || 0;
+      return `<div class="buffrow">
+        <div class="bhead"><b>${b.name}</b><span style="color:#6b7280">${v}${v ? ' · ' + b.note.replace(/^[^:]*:\s*/, '') : ''}</span></div>
+        <input type="range" min="0" max="${b.maxLevel}" value="${v}" data-b="${id}">
+      </div>`;
+    }).join('');
+    $s('s_buffs').querySelectorAll('input[type=range]').forEach(r => r.addEventListener('input', () => {
+      BUFF[r.getAttribute('data-b')] = +r.value;
+      drawBuffs(); compute();
+    }));
+  }
+
+  function character() {
+    const magic = isMagic();
+    const w = MSC.WEAPON_LIST.find(x => x.id === MSC.JOB_WEAPON[job]) || { w: 2.5, tier: 6 };
+    const C = {
+      klass: magic ? 'magic' : 'physical', job, lv: V.lv, mode: 'stats',
+      INT: V.INT, MATK: V.MATK, ML: 10, spellMastery: 10,
+      W: w.w, A: 0, critRate: 0, critDmg: 0, obsMin: 0, obsMax: 0
+    };
+    if (magic) {
+      C.INT = V.INT; C.MATK = V.MATK; C.spellMastery = 10;
+    } else {
+      const weapon = w.id;
+      const prim = (weapon === 'bow' || weapon === 'crossbow') ? V.DEX : (weapon === 'claw' || weapon === 'dagger') ? V.LUK : V.STR;
+      const sec = (weapon === 'bow' || weapon === 'crossbow') ? V.STR : (weapon === 'claw' || weapon === 'dagger') ? (V.DEX + V.STR) : V.DEX;
+      C.P = prim; C.Q = sec; C.WATK = V.WATK || 0; C.W = w.w;
+      C.critRate = (klass === 'bowman' || klass === 'thief') ? 5 : 0;
+      C.critDmg = (klass === 'bowman' || klass === 'thief') ? 20 : 0;
+      C.ML = 0; // mastery left at 0: the user types the range they actually see
+    }
+    const res = MSC.applyBuffs(C, BUFF);
+    return res.C ? res.C : C;
+  }
+
+  function skill(spec) {
+    const ms = MSC.castTime(spec.id, { tier: (MSC.WEAPON_LIST.find(x => x.id === MSC.JOB_WEAPON[job]) || { tier: 6 }).tier, booster: false, spellBooster: 0 });
+    const sk = MSC.skillAt(spec.id, spec.lv, { ms });
+    if (!isMagic() && spec.obsMin > 0) { sk.obsMin = spec.obsMin; sk.obsMax = spec.obsMax; }
+    return sk;
+  }
+
+  function compute() {
+    readInputs();
+    const C = character();
+    const ids = MSC.skillsFor(job);
+    const mainId = V.skill && ids.includes(V.skill) ? V.skill : MSC.JOB_DEFAULTS[job][0];
+    const mainLv = Math.min(V.slv || 1, MSC.SKILLS[mainId].maxLevel);
+    const sk = skill({ id: mainId, lv: mainLv, obsMin: V.dmin, obsMax: V.dmax });
+
+    const ranked = MSC.rankMobs(C, [sk], { n: V.n, up: 12, down: 8 });
+    const top = ranked.slice(0, 8);
+    if (!top.length) { $s('s_result').innerHTML = '<div class="hint">No monster in this level window — raise your level or the search.</div>'; return; }
+    const best = top[0];
+
+    // 1v1 vs mobbing crossover with the job's two signature skills
+    const pair = MSC.JOB_DEFAULTS[job] || [mainId, mainId];
+    let verdict = '';
+    if (pair[0] !== pair[1] && V.n === 1 && ranked.length) {
+      const one = skill({ id: pair[0], lv: Math.min(mainLv, MSC.SKILLS[pair[0]].maxLevel), obsMin: V.dmin, obsMax: V.dmax });
+      const many = skill({ id: pair[1], lv: Math.min(mainLv, MSC.SKILLS[pair[1]].maxLevel), obsMin: V.dmin, obsMax: V.dmax });
+      const a = MSC.evaluate(C, one, MSC.MOBS.find(m => m.name === best.name), 1);
+      const b1 = MSC.evaluate(C, many, MSC.MOBS.find(m => m.name === best.name), 1);
+      const need = b1.dps > 0 ? Math.ceil(a.dps / b1.dps) : Infinity;
+      if (isFinite(need) && need <= (many.targets || 1)) {
+        verdict = `<span class="pill">1v1</span> ${one.name} wins with one monster in front of you — switch to <b>${many.name}</b> at ${need} in range.`;
+      } else {
+        verdict = `<span class="pill">1v1</span> Keep ${one.name} — ${many.name} does not catch it even at full target count.`;
+      }
+    }
+
+    const tiles = top.map(m =>
+      `<button class="iosmob${m.name === best.name ? ' on' : ''}" data-m="${m.name}">
+         <span class="ico">${window.mobIcon(m.name)}</span><span>${m.name}</span>
+         <span class="epm">${Math.round(m.epm).toLocaleString()} xp/min</span></button>`).join('');
+
+    const ev = MSC.evaluate(C, sk, MSC.MOBS.find(m => m.name === best.name), V.n);
+    $s('s_result').innerHTML = `
+      <div class="hint" style="margin-bottom:8px">Best target for ${MSC.SKILLS[mainId].name} Lv ${mainLv}</div>
+      <div class="bigres">
+        <span class="ico">${window.mobIcon(best.name)}</span>
+        <div>
+          <div class="num">${Math.round(best.epm).toLocaleString()}</div>
+          <div class="lbl">EXP/min on ${best.name} · Lv ${best.lv} · ${best.hp.toLocaleString()} HP</div>
+        </div>
+      </div>
+      <div class="verdict">
+        <span class="pill">${ev.casts} cast${ev.casts === 1 ? '' : 's'}</span>
+        <span class="pill">${ev.hit.min.toLocaleString()}–${ev.hit.max.toLocaleString()} per hit</span>
+        <span class="pill">${Math.round(ev.ttkMs)} ms per kill</span>
+        ${verdict}
+      </div>
+      <div class="iosgrid">${tiles}</div>
+      <div class="hint" style="margin-top:10px">Damage is the MSCW formula: stat roll → ×100/(DEF+100) → element → level gap. The range shown is the non-crit roll; crits are a separate line.</div>`;
+    [...$s('s_result').querySelectorAll('.iosmob')].forEach(b => b.addEventListener('click', () => {
+      V.pin = b.getAttribute('data-m');
+      const m = ranked.find(x => x.name === V.pin);
+      if (!m) return;
+      $s('s_result').querySelectorAll('.iosmob').forEach(x => x.classList.toggle('on', x === b));
+    }));
+  }
+
+  window.simpleRender = function () { drawClass(); drawInputs(); compute(); };
+  if (!document.getElementById('viewSimple').hidden) window.simpleRender();
+  else { drawClass(); drawInputs(); compute(); }
+})();
+</script>
+
 </body>
 </html>

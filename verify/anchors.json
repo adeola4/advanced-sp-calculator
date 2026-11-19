@@ -1,0 +1,885 @@
+{
+ "source": "henesys.gg/damage (MSCW damage calculator) \u2014 harvested one input at a time",
+ "captured": "2026-11-19",
+ "cases": [
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    885,
+    1110
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    312,
+    1110
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 5,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    598,
+    1110
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 47,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    594,
+    745
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 140,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1770,
+    2220
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 60,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    465,
+    564
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 300,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1305,
+    1656
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 200,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1140,
+    1365
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 10,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    921,
+    1146
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 40,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1031,
+    1255
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 5,
+    "Critical Damage %": 20
+   },
+   "pre": [
+    885,
+    1110
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 50,
+    "Critical Damage %": 100
+   },
+   "pre": [
+    885,
+    1110
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 100,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    340,
+    427
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 130,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    442,
+    555
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 400,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1362,
+    1708
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 120,
+    "Total DEX": 60,
+    "Weapon Attack": 55,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 3,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    320,
+    657
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 50,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    885,
+    1110
+   ],
+   "post": [
+    737,
+    925
+   ],
+   "mult": 2.5,
+   "mob": {
+    "name": "Curse Eye",
+    "lv": 33,
+    "def": 20
+   }
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 20,
+    "Total STR": 180,
+    "Total DEX": 60,
+    "Weapon Attack": 70,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    885,
+    1110
+   ],
+   "post": [
+    447,
+    560
+   ],
+   "mult": 2.5,
+   "mob": {
+    "name": "Curse Eye",
+    "lv": 33,
+    "def": 20
+   }
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 50,
+    "Total INT": 300,
+    "Magic Attack": 100,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1281,
+    1530
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 50,
+    "Total INT": 300,
+    "Magic Attack": 100,
+    "Spell mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    525,
+    1530
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 50,
+    "Total INT": 300,
+    "Magic Attack": 100,
+    "Spell mastery level": 5,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    903,
+    1530
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 50,
+    "Total INT": 300,
+    "Magic Attack": 0,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    768,
+    918
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 50,
+    "Total INT": 300,
+    "Magic Attack": 250,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    2050,
+    2448
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 50,
+    "Total INT": 100,
+    "Magic Attack": 100,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    436,
+    486
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 50,
+    "Total INT": 600,
+    "Magic Attack": 100,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    3381,
+    4176
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 90,
+    "Your level": 50,
+    "Total INT": 300,
+    "Magic Attack": 100,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    640,
+    765
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 50,
+    "Total INT": 300,
+    "Magic Attack": 100,
+    "Spell mastery level": 10,
+    "Critical Rate %": 30,
+    "Critical Damage %": 50
+   },
+   "pre": [
+    1281,
+    1530
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Magic Claw",
+   "fields": {
+    "Basic Attack": 65,
+    "Your level": 50,
+    "Total INT": 300,
+    "Magic Attack": 100,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    462,
+    552
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Energy Bolt",
+   "fields": {
+    "Basic Attack": 130,
+    "Your level": 50,
+    "Total INT": 300,
+    "Magic Attack": 100,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    925,
+    1105
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 50,
+    "Total INT": 300,
+    "Magic Attack": 100,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1281,
+    1530
+   ],
+   "post": [
+    1165,
+    1390
+   ],
+   "mob": {
+    "name": "Curse Eye",
+    "lv": 33,
+    "def": 20
+   }
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 20,
+    "Total INT": 300,
+    "Magic Attack": 100,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1281,
+    1530
+   ],
+   "post": [
+    706,
+    842
+   ],
+   "mob": {
+    "name": "Curse Eye",
+    "lv": 33,
+    "def": 20
+   }
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 240,
+    "Your level": 30,
+    "Total STR": 320,
+    "Total DEX": 180,
+    "Weapon Attack": 40,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    303,
+    1036
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 240,
+    "Your level": 70,
+    "Total STR": 80,
+    "Total DEX": 180,
+    "Weapon Attack": 85,
+    "Attack from gear and buffs": 0,
+    "Weapon mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    558,
+    979
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 300,
+    "Your level": 50,
+    "Total STR": 80,
+    "Total DEX": 20,
+    "Weapon Attack": 40,
+    "Attack from gear and buffs": 25,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    364,
+    444
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 110,
+    "Your level": 70,
+    "Total STR": 80,
+    "Total DEX": 20,
+    "Weapon Attack": 40,
+    "Attack from gear and buffs": 25,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    133,
+    162
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 110,
+    "Your level": 30,
+    "Total STR": 80,
+    "Total DEX": 180,
+    "Weapon Attack": 85,
+    "Attack from gear and buffs": 6,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    398,
+    460
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 180,
+    "Your level": 70,
+    "Total STR": 80,
+    "Total DEX": 180,
+    "Weapon Attack": 120,
+    "Attack from gear and buffs": 25,
+    "Weapon mastery level": 4,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    820,
+    1144
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 110,
+    "Your level": 70,
+    "Total STR": 150,
+    "Total DEX": 90,
+    "Weapon Attack": 40,
+    "Attack from gear and buffs": 25,
+    "Weapon mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    108,
+    270
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "phys",
+   "attack": "Power Strike",
+   "fields": {
+    "Damage %": 260,
+    "Your level": 30,
+    "Total STR": 150,
+    "Total DEX": 90,
+    "Weapon Attack": 180,
+    "Attack from gear and buffs": 6,
+    "Weapon mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    2203,
+    2700
+   ],
+   "mult": 2.5
+  },
+  {
+   "kind": "magic",
+   "attack": "Energy Bolt",
+   "fields": {
+    "Basic Attack": 260,
+    "Your level": 50,
+    "Total INT": 350,
+    "Magic Attack": 40,
+    "Spell mastery level": 3,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    997,
+    2124
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Energy Bolt",
+   "fields": {
+    "Basic Attack": 120,
+    "Your level": 30,
+    "Total INT": 350,
+    "Magic Attack": 220,
+    "Spell mastery level": 6,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1124,
+    1801
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Energy Bolt",
+   "fields": {
+    "Basic Attack": 260,
+    "Your level": 50,
+    "Total INT": 90,
+    "Magic Attack": 0,
+    "Spell mastery level": 10,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    181,
+    201
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Fire Arrow",
+   "fields": {
+    "Basic Attack": 180,
+    "Your level": 30,
+    "Total INT": 500,
+    "Magic Attack": 220,
+    "Spell mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    1082,
+    4230
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Energy Bolt",
+   "fields": {
+    "Basic Attack": 70,
+    "Your level": 70,
+    "Total INT": 350,
+    "Magic Attack": 120,
+    "Spell mastery level": 6,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    489,
+    784
+   ]
+  },
+  {
+   "kind": "magic",
+   "attack": "Energy Bolt",
+   "fields": {
+    "Basic Attack": 260,
+    "Your level": 70,
+    "Total INT": 500,
+    "Magic Attack": 0,
+    "Spell mastery level": 0,
+    "Critical Rate %": 0,
+    "Critical Damage %": 0
+   },
+   "pre": [
+    831,
+    3250
+   ]
+  }
+ ]
+}

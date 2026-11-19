@@ -11,32 +11,27 @@
 
   /* --- monsters: name, level, HP, P.DEF, EXP ---------------------------------
      Element states come from the MSCW monster database (weak / resist / immune). */
+  /* [name, level, HP, P.DEF, M.DEF, EXP] — defences measured off the MSCW calculator
+     by reading a neutral attack's post-defence line for every monster in its dropdown. */
   const MOB_ROWS = [
-    ["Snail", 1, 45, 0, 2], ["Blue Snail", 2, 51, 0, 4], ["Shroom", 3, 62, 0, 6], ["Red Snail", 4, 68, 15, 8],
-    ["Stump", 5, 133, 30, 10], ["Slime", 6, 115, 10, 12], ["Pig", 7, 128, 0, 13], ["Orange Mushroom", 8, 142, 0, 15],
-    ["Ribbon Pig", 10, 172, 0, 19], ["Dark Stump", 11, 236, 30, 21], ["Octopus", 12, 191, 0, 23],
-    ["Green Mushroom", 14, 233, 0, 26], ["Bubbling", 15, 259, 20, 28], ["Axe Stump", 17, 371, 30, 32],
-    ["Blue Mushroom", 19, 342, 10, 35], ["Ghost Stump", 19, 404, 15, 35], ["Stirge", 20, 296, 5, 37],
-    ["Jr. Necki", 21, 272, 15, 39], ["Horny Mushroom", 22, 403, 10, 41], ["Dark Axe Stump", 23, 547, 30, 43],
-    ["Wooden Mask", 23, 462, 0, 43], ["Zombie Mushroom", 24, 436, 10, 45], ["Rocky Mask", 24, 479, 30, 45],
-    ["Wild Boar", 25, 510, 20, 46], ["Evil Eye", 27, 606, 10, 50], ["Fairy", 29, 593, 0, 54],
-    ["Ligator", 31, 853, 10, 58], ["Fire Boar", 32, 842, 10, 60], ["Curse Eye", 33, 1001, 20, 63],
-    ["Jr. Wraith", 34, 982, 30, 66], ["Jr. Boogie", 35, 1395, 50, 69], ["Lupin", 37, 1336, 5, 75],
-    ["Lorang", 38, 1714, 20, 78], ["Glowshroom", 39, 1377, 15, 82], ["Cold Eye", 40, 1894, 10, 85],
-    ["Raffle", 40, 1722, 20, 85], ["Zombie Lupin", 41, 1774, 5, 89], ["Golden Stirge", 42, 1278, 15, 93],
-    ["Aqumander", 43, 2069, 20, 98], ["Skeledog", 44, 2134, 15, 102], ["Copper Drake", 45, 2379, 15, 107],
-    ["Echopus", 45, 2163, 10, 107], ["Tortie", 46, 2226, 30, 111], ["Rafflesia", 47, 2285, 20, 117],
-    ["Mummydog", 47, 2513, 15, 117], ["Wraith", 48, 2350, 30, 122], ["Clang", 49, 2657, 20, 127],
-    ["Drake", 50, 2950, 15, 133], ["Duskmander", 50, 2682, 10, 133], ["Croco", 52, 3136, 10, 146],
-    ["Myewood", 54, 3924, 20, 160], ["Malady", 55, 2998, 5, 167], ["Stone Golem", 56, 5134, 25, 175],
-    ["Rotten Mushroom", 56, 3520, 20, 183], ["Skeleton Soldier", 57, 3872, 15, 183],
-    ["Dark Stone Golem", 58, 5428, 5, 192], ["Sporewood", 59, 4834, 20, 201], ["Red Drake", 60, 5184, 15, 211],
-    ["Wild Kargo", 62, 5057, 30, 231], ["Officer Skeleton", 63, 5976, 15, 242], ["Tauromacis", 70, 9328, 25, 337],
-    ["Commander Skeleton", 73, 11915, 15, 390], ["Taurospear", 75, 12535, 5, 429],
-    ["Mano (boss)", 20, 7420, 20, 148], ["King Slime (boss)", 32, 16820, 15, 2400],
-    ["Stumpy (boss)", 35, 19220, 20, 276], ["Mushmom (boss)", 40, 34440, 15, 340],
-    ["Shade (boss)", 48, 47000, 30, 488], ["Zombie Mushmom (boss)", 55, 66640, 10, 668],
-    ["Rotten Mushmom (boss)", 60, 86400, 20, 844], ["Jr. Balrog (boss)", 80, 325400, 15, 2188]
+    ["Snail", 1, 45, 0, 0, 2], ["Blue Snail", 2, 51, 0, 0, 4], ["Shroom", 3, 62, 0, 0, 6], ["Red Snail", 4, 68, 0, 15, 8],
+    ["Stump", 5, 133, 30, 0, 10], ["Slime", 6, 115, 10, 5, 12], ["Pig", 7, 128, 0, 0, 13], ["Orange Mushroom", 8, 142, 0, 0, 15],
+    ["Ribbon Pig", 10, 172, 0, 0, 19], ["Dark Stump", 11, 236, 30, 0, 21], ["Octopus", 12, 191, 0, 15, 23], ["Green Mushroom", 14, 233, 0, 20, 26],
+    ["Bubbling", 15, 259, 20, 10, 28], ["Axe Stump", 17, 371, 30, 0, 32], ["Blue Mushroom", 19, 342, 10, 10, 35], ["Ghost Stump", 19, 404, 15, 15, 35],
+    ["Stirge", 20, 296, 5, 15, 37], ["Jr. Necki", 21, 272, 15, 5, 39], ["Horny Mushroom", 22, 403, 10, 0, 41], ["Dark Axe Stump", 23, 547, 30, 0, 43],
+    ["Wooden Mask", 23, 462, 0, 30, 43], ["Zombie Mushroom", 24, 436, 10, 20, 45], ["Rocky Mask", 24, 479, 30, 0, 45], ["Wild Boar", 25, 510, 20, 10, 46],
+    ["Evil Eye", 27, 606, 10, 20, 50], ["Fairy", 29, 593, 0, 501, 54], ["Ligator", 31, 853, 10, 0, 58], ["Fire Boar", 32, 842, 10, 0, 60],
+    ["Curse Eye", 33, 1001, 20, 10, 63], ["Jr. Wraith", 34, 982, 30, 0, 66], ["Jr. Boogie", 35, 1395, 50, 50, 69], ["Lupin", 37, 1336, 5, 20, 75],
+    ["Lorang", 38, 1714, 20, 10, 78], ["Glowshroom", 39, 1377, 15, 5, 82], ["Cold Eye", 40, 1894, 10, 20, 85], ["Raffle", 40, 1722, 20, 10, 85],
+    ["Zombie Lupin", 41, 1774, 5, 20, 89], ["Golden Stirge", 42, 1278, 15, 15, 93], ["Aqumander", 43, 2069, 20, 10, 98], ["Skeledog", 44, 2134, 15, 15, 102],
+    ["Copper Drake", 45, 2379, 15, 15, 107], ["Echopus", 45, 2163, 10, 20, 107], ["Tortie", 46, 2226, 30, 0, 111], ["Rafflesia", 47, 2285, 20, 10, 117],
+    ["Mummydog", 47, 2513, 15, 15, 117], ["Wraith", 48, 2350, 30, 0, 122], ["Clang", 49, 2657, 20, 10, 127], ["Drake", 50, 2950, 15, 15, 133],
+    ["Duskmander", 50, 2682, 10, 20, 133], ["Croco", 52, 3136, 10, 0, 146], ["Myewood", 54, 3924, 20, 10, 160], ["Malady", 55, 2998, 5, 20, 167],
+    ["Stone Golem", 56, 5134, 25, 5, 175], ["Rotten Mushroom", 56, 3520, 20, 5, 183], ["Skeleton Soldier", 57, 3872, 15, 15, 183], ["Dark Stone Golem", 58, 5428, 5, 25, 192],
+    ["Sporewood", 59, 4834, 20, 10, 201], ["Red Drake", 60, 5184, 15, 15, 211], ["Wild Kargo", 62, 5057, 30, 0, 231], ["Officer Skeleton", 63, 5976, 15, 15, 242],
+    ["Tauromacis", 70, 9328, 25, 5, 337], ["Commander Skeleton", 73, 11915, 15, 15, 390], ["Taurospear", 75, 12535, 5, 25, 429], ["Mano (boss)", 20, 7420, 20, 20, 148],
+    ["King Slime (boss)", 32, 16820, 15, 15, 2400], ["Stumpy (boss)", 35, 19220, 20, 20, 276], ["Mushmom (boss)", 40, 34440, 15, 15, 340], ["Shade (boss)", 48, 47000, 30, 30, 488],
+    ["Zombie Mushmom (boss)", 55, 66640, 10, 10, 668], ["Rotten Mushmom (boss)", 60, 86400, 20, 20, 844], ["Jr. Balrog (boss)", 80, 325400, 15, 15, 2188],
   ];
 
   const MOB_ELEM = {
@@ -64,8 +59,8 @@
     "Taurospear": { ice: "weak", lightning: "resist" }
   };
 
-  const MOBS = MOB_ROWS.map(([name, lv, hp, def, exp]) =>
-    ({ name, lv, hp, def, exp, elem: MOB_ELEM[name] || {} }));
+  const MOBS = MOB_ROWS.map(([name, lv, hp, pdef, mdef, exp]) =>
+    ({ name, lv, hp, pdef, mdef, def: pdef, exp, elem: MOB_ELEM[name] || {} }));
 
   /* --- skill library --------------------------------------------------------
      Level tables transcribed from the MSCW skill database (henesys.gg skill pages):
@@ -214,19 +209,32 @@
   }
 
   /* raw -> on-mob per-hit numbers */
-  function applyTarget(raw, mob, playerLv, C, elemMult) {
-    const edef = Math.max(0, mob.def || 0);
+  /* Effective defence uses the MSCW order: flat bonuses first, then a percent bonus on base def. */
+  function effectiveDef(mob, klass) {
+    const base = Math.max(0, (klass === "magic"
+      ? (mob.mdef != null ? mob.mdef : mob.def)
+      : (mob.pdef != null ? mob.pdef : mob.def)) || 0);
+    const flat = mob.defFlat || 0, pct = mob.defPct || 0;
+    return Math.max(0, flat + Math.trunc((1 + pct / 100) * base));
+  }
+
+  /* MSCW modifier order: defence, element, level gap, crit. The DISPLAYED range is the
+     non-crit roll — crits are a separate roll per hit, so they never widen the range. */
+  function applyTarget(raw, mob, playerLv, C, elemMult, klass) {
+    const edef = effectiveDef(mob, klass === undefined ? C.klass : klass);
     const defScale = 100 / (edef + 100);
     const ls = levelScale(playerLv, mob.lv);
     const c = (C.critRate || 0) / 100, d = (C.critDmg || 0) / 100;
-    const crit = 1 + c * d;
     const e = elemMult == null ? 1 : elemMult;
-    const post = v => Math.min(CAP, Math.max(1, v * defScale * e * ls * crit));
-    const rawMaxPost = raw.max * defScale * e * ls * crit;
+    const post = v => Math.min(CAP, Math.max(1, v * defScale * e * ls));
+    const critHit = v => Math.min(CAP, Math.max(1, post(v) * (1 + d)));
+    const rawMaxPost = raw.max * defScale * e * ls;
     return {
-      // final on-screen damage is an integer per line
       min: Math.trunc(post(raw.min)), max: Math.trunc(post(raw.max)), avg: post(raw.avg),
-      defScale, ls, elemMult: e, crit,
+      critMin: Math.trunc(critHit(raw.min)), critMax: Math.trunc(critHit(raw.max)),
+      expected: post(raw.avg) * (1 + c * d),      // average hit including crit rolls
+      critRate: c, critDmg: d, critMult: 1 + d, expectedCritMult: 1 + c * d,
+      edef, defScale, ls, elemMult: e,
       capped: rawMaxPost > CAP,
       overflowPct: rawMaxPost > CAP ? (rawMaxPost / CAP - 1) * 100 : 0
     };
@@ -239,10 +247,10 @@
     const n = Math.max(1, N || 1);
     const em = elementMult(mob, sk.element);
     const raw = rawRange(sk, C);
-    const hit = applyTarget(raw, mob, C.lv, C, em);
+    const hit = applyTarget(raw, mob, C.lv, C, em, sk.klass || C.klass);
 
     const targets = Math.min(n, sk.targets || 1);
-    const directPerCast = (sk.hits || 1) * hit.avg * targets;
+    const directPerCast = (sk.hits || 1) * hit.expected * targets;
 
     // DoT: quoted as "% of a basic attack", ignores monster defence (MSCW rule), keeps the element
     let dotTotal = 0, dotApplied = 0;
