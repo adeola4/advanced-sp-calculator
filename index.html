@@ -646,6 +646,14 @@
     bandit: ["savage-blow", "double-stab"]
   };
 
+  /* the weapon each job is normally built around */
+  const JOB_WEAPON = {
+    beginner: "sword1h", warrior: "sword1h", fighter: "sword2h", page: "sword1h", spearman: "spear",
+    magician: "wand", fp: "wand", il: "wand", cleric: "wand",
+    archer: "bow", hunter: "bow", crossbowman: "crossbow",
+    rogue: "dagger", assassin: "claw", bandit: "dagger"
+  };
+
   Object.assign(SKILLS, MORE_SKILLS);
   Object.keys(SKILL_JOBS).forEach(k => { if (SKILLS[k]) SKILLS[k].jobs = SKILL_JOBS[k]; });
 
@@ -666,7 +674,7 @@
   }
 
   const api = {
-    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS,
+    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS, JOB_WEAPON,
     classById, jobById, weaponsFor, skillsFor,
     mastery, magicTotal, rawRange, impliedPct, elementMult, levelScale, applyTarget,
     skillAt, atLevel, evaluate, analyze, compare, rankMobs, selfCheck
@@ -851,7 +859,7 @@ function loadMob() {
   });
 }
 
-function syncClass() {
+function syncClass(keepWeapon) {
   const classId = $('klass').value, jobId = $('job').value;
   const klass = MSC.classById(classId).klass;
   const obs = $('mode').value === 'observed';
@@ -859,9 +867,11 @@ function syncClass() {
   $('physBlock').style.display = (!obs && klass === 'physical') ? 'block' : 'none';
 
   const wl = MSC.weaponsFor(classId, jobId);
-  const prev = $('W').value;
+  const prevId = $('W').getAttribute('data-id');
   $('W').innerHTML = wl.map(w => `<option value="${w.w}" data-id="${w.id}">${w.name} ×${w.w}</option>`).join('');
-  $('W').value = wl.some(w => String(w.w) === prev) ? prev : String(wl[0].w);
+  const keep = keepWeapon && wl.find(w => w.id === prevId);
+  const pick = keep || wl.find(w => w.id === MSC.JOB_WEAPON[jobId]) || wl[0];
+  $('W').value = String(pick.w);
   const wi = wl[Math.max(0, wl.findIndex(w => String(w.w) === $('W').value))] || wl[0];
   $('W').setAttribute('data-primary', wi.primary); $('W').setAttribute('data-secondary', wi.secondary);
   $('Plabel').textContent = wi.primary + ' (primary)';
@@ -884,7 +894,7 @@ function syncClass() {
   compute();
 }
 
-$('W').addEventListener('change', syncClass);
+$('W').addEventListener('change', () => syncClass(true));
 $('mode').addEventListener('change', () => {
   const obs = $('mode').value === 'observed';
   $('obsBlock').style.display = obs ? 'block' : 'none';

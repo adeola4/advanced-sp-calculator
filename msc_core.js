@@ -473,6 +473,14 @@
     bandit: ["savage-blow", "double-stab"]
   };
 
+  /* the weapon each job is normally built around */
+  const JOB_WEAPON = {
+    beginner: "sword1h", warrior: "sword1h", fighter: "sword2h", page: "sword1h", spearman: "spear",
+    magician: "wand", fp: "wand", il: "wand", cleric: "wand",
+    archer: "bow", hunter: "bow", crossbowman: "crossbow",
+    rogue: "dagger", assassin: "claw", bandit: "dagger"
+  };
+
   Object.assign(SKILLS, MORE_SKILLS);
   Object.keys(SKILL_JOBS).forEach(k => { if (SKILLS[k]) SKILLS[k].jobs = SKILL_JOBS[k]; });
 
@@ -493,7 +501,7 @@
   }
 
   const api = {
-    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS,
+    CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS, JOB_WEAPON,
     classById, jobById, weaponsFor, skillsFor,
     mastery, magicTotal, rawRange, impliedPct, elementMult, levelScale, applyTarget,
     skillAt, atLevel, evaluate, analyze, compare, rankMobs, selfCheck
