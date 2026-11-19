@@ -1570,13 +1570,14 @@ window.mobIcon = function (n) {
     const pair = MSC.JOB_DEFAULTS[job] || [mainId, mainId];
     let verdict = '';
     if (pair[0] !== pair[1] && V.n === 1 && ranked.length) {
-      const one = skill({ id: pair[0], lv: Math.min(mainLv, MSC.SKILLS[pair[0]].maxLevel), obsMin: V.dmin, obsMax: V.dmax });
-      const many = skill({ id: pair[1], lv: Math.min(mainLv, MSC.SKILLS[pair[1]].maxLevel), obsMin: V.dmin, obsMax: V.dmax });
+      // the range the user typed belongs to their own skill only — the crossover uses the formula
+      const one = skill({ id: pair[0], lv: Math.min(mainLv, MSC.SKILLS[pair[0]].maxLevel), obsMin: (pair[0] === mainId ? V.dmin : 0), obsMax: (pair[0] === mainId ? V.dmax : 0) });
+      const many = skill({ id: pair[1], lv: Math.min(mainLv, MSC.SKILLS[pair[1]].maxLevel), obsMin: (pair[1] === mainId ? V.dmin : 0), obsMax: (pair[1] === mainId ? V.dmax : 0) });
       const a = MSC.evaluate(C, one, MSC.MOBS.find(m => m.name === best.name), 1);
       const b1 = MSC.evaluate(C, many, MSC.MOBS.find(m => m.name === best.name), 1);
       const need = b1.dps > 0 ? Math.ceil(a.dps / b1.dps) : Infinity;
       if (isFinite(need) && need <= (many.targets || 1)) {
-        verdict = `<span class="pill">1v1</span> ${one.name} wins with one monster in front of you — switch to <b>${many.name}</b> at ${need} in range.`;
+        verdict = `<span class="pill">1v1</span> ${one.name} wins with one monster in front of you — switch to <b>${many.name}</b> at ${Math.max(2, need)} in range.`;
       } else {
         verdict = `<span class="pill">1v1</span> Keep ${one.name} — ${many.name} does not catch it even at full target count.`;
       }
