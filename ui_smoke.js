@@ -179,6 +179,8 @@ const noisy = sandbox.parseStatWindow('STR 132\nDEX 3O\nW.ATK a7\n1O,OOO - 12,34
 check('parser survives OCR digit noise (a7 -> 47, 3O -> 30)', noisy.WATK === 47 && noisy.DEX === 30, JSON.stringify(noisy));
 sandbox.applyImport(parsed);
 check('import fills the right stat field for the job', String(el('P').value) === '132' || String(el('P').value) === '132', 'P=' + el('P').value + ' Q=' + el('Q').value);
+check('import fills W.ATK for physical jobs', String(el('WATK').value) === '47', String(el('WATK').value));
+check('import reports the weapon attack it read', /W\.ATK 47/.test(el('importNote').innerHTML), el('importNote').innerHTML.slice(0, 120));
 check('import switches to observed mode', el('mode').value === 'observed');
 check('import reports what it read', /Read from your screenshot/.test(el('importNote').innerHTML));
 

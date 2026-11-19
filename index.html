@@ -1136,6 +1136,7 @@ function applyImport(found) {
     const sv = tgt.secondary.map(t => found[t]).filter(v => v != null);
     if (sv.length) put('Q', sv.reduce((a, b) => a + b, 0), tgt.secondary.join(' + '));
   }
+  if (tgt.magic) put('MATK', found.MATK, 'MATK'); else put('WATK', found.WATK, 'W.ATK');
   if (found.obsMin && found.obsMax) {
     $('obsMin').value = found.obsMin; $('obsMax').value = found.obsMax;
     $('mode').value = 'observed'; $('obsBlock').style.display = 'block';
