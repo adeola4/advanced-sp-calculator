@@ -207,5 +207,12 @@ eq('critical shot 15 at max: rate +20 / dmg +15', [bcrit.critRate, bcrit.critDmg
 eq('assassin carries claw mastery + critical throw', MSC.buffsFor('thief', 'assassin').sort(), ['claw-mastery', 'critical-throw']);
 eq('claw mastery 20 adds +20 attack power', MSC.applyBuffs({ A: 0 }, { 'claw-mastery': 20 }).C.A, 20);
 
+// --- anchor 15: a buff on an observed range scales by its share of the attack term
+const obsC = { lv: 50, mode: 'observed', klass: 'physical', P: 132, Q: 30, W: 1.8, A: 0, obsMin: 1000, obsMax: 2000 };
+const obsBuffed = MSC.applyBuffs(obsC, { rage: 30 }).C;
+const kWant = (1 + (132 * 1.8 + 30) / 100 + 40 / 50) / (1 + (132 * 1.8 + 30) / 100);
+ok('observed range scales by the rage share', obsBuffed.obsMax, 2000 * kWant, 1);
+eq('rage leaves the base object untouched', obsC.A, 0);
+
 console.log(fails === 0 ? '\nALL CHECKS PASSED' : `\n${fails} CHECK(S) FAILED`);
 process.exit(fails === 0 ? 0 : 1);

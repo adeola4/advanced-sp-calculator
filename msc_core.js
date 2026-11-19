@@ -560,9 +560,16 @@
     });
   }
 
+  /* the part of the damage formula a stat buff actually multiplies */
+  function buffUnit(C) {
+    if (C.klass === "magic") return magicTotal(C);
+    return 1 + ((((C.P || 0) * (C.W || 0)) + (C.Q || 0)) / 100) + ((C.A || 0) / 50);
+  }
+
   /* levels = { buffId: level }; 0 or missing = inactive */
   function applyBuffs(C, levels) {
     const out = Object.assign({}, C);
+    const before = buffUnit(out);
     const applied = [];
     Object.keys(levels || {}).forEach(id => {
       const def = BUFFS[id], lv = levels[id];
@@ -574,12 +581,20 @@
         applied.push({ id, name: def.name, stat: e.stat, value: v, level: lv });
       });
     });
+    // observed ranges already contain the player's own buffs, so a buff can only be modelled
+    // as the share of the attack term it adds
+    if (out.mode === "observed") {
+      const k = before > 0 ? buffUnit(out) / before : 1;
+      if (out.obsMin > 0) out.obsMin = out.obsMin * k;
+      if (out.obsMax > 0) out.obsMax = out.obsMax * k;
+      out.buffScale = k;
+    }
     return { C: out, applied };
   }
 
   const api = {
     CAP, MOBS, MOB_ELEM, SKILLS, ELEM_MULT, CLASSES, WEAPON_LIST, SKILL_JOBS, JOB_DEFAULTS, JOB_WEAPON, BUFFS,
-    buffValue, buffsFor, applyBuffs,
+    buffValue, buffsFor, applyBuffs, buffUnit,
     classById, jobById, weaponsFor, skillsFor,
     mastery, magicTotal, rawRange, impliedPct, elementMult, levelScale, applyTarget,
     skillAt, atLevel, evaluate, analyze, compare, rankMobs, selfCheck
