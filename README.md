@@ -117,3 +117,44 @@ node msc_test.js && python3 build.py && node dom_smoke.js index.html
 ```
 
 Deploy: `vercel --prod` from the repo root (static site, `vercel.json` sets `cleanUrls`).
+
+## Damage accuracy: the verification loop
+
+Every formula in `msc_core.js` is now gated by a harvested ground-truth file, not by hand-picked
+examples. `verify/anchors.json` holds 45 cases read **one input at a time** off the MSCW damage
+calculator (`henesys.gg/damage`), covering:
+
+- mastery 0 / 3 / 4 / 5 / 7 / 10 on both physical and magic
+- W.ATK, primary stat, secondary stat and Attack-Power sweeps
+- damage % from 100 to 400
+- 14 randomised stat blocks across levels 30 / 50 / 70
+- defence: measured per monster, physical **and** magic
+- level gap: gap 13 → ×0.606, gap 20 → ×0.5 (Tauromacis), gap 30 → ×0.4 (Jr. Balrog)
+- crit: range must NOT move when crit rate/damage change (crit is a separate roll per hit)
+
+Run the gate after any change:
+
+```bash
+./verify/loop.sh      # 45/45 calculator cases → anchors → build → UI smoke
+```
+
+Current state: **45/45 cases match exactly** (±1 from their truncation order).
+
+### What the audit changed
+
+- **Crit was inside the damage range.** MSCW shows the non-crit roll and rolls crit separately
+  (`critical = normal × (1 + d)`, `expected = normal × (1 + c × d)`). The range no longer moves
+  when you enter crit rate/damage; a separate "expected average (incl. crit)" drives DPS/EXP.
+- **Monsters have two defences.** Every monster's P.DEF and M.DEF was measured by reading a
+  neutral attack's post-defence line on the calculator, then dividing out the level scale.
+  Curse Eye: 20 P.DEF / 10 M.DEF — using 20 for magic was under-reporting magic damage by ~9%.
+- **Effective DEF** now follows `max(0, flat + trunc((1 + pct/100) × base))`.
+- **Modifier order** documented and enforced: defence → element → level gap → crit → clamp 1…99,999.
+
+## Two views
+
+- **Advanced** — the full workbench: skill-vs-skill, buffs, MP economics, verification panel.
+- **Simple** — one screen, iOS-style: class icons, four tabs of numbers, buff sliders, and the
+  best monster to farm with EXP/min on each tile.
+
+MIMP: monsters are buttons now — a filterable grid of icons in Advanced, ranked icon tiles in Simple.

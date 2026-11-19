@@ -1360,13 +1360,13 @@ renderBuffs();
 /* ============ shared monster icons ============ */
 window.mobIcon = function (n) {
   const map = [
-    [/mushmom/i, '👑'], [/mushroom|glowshroom|sporewood/i, '🍄'], [/snail/i, '🐌'],
-    [/boar|kargo/i, '🐗'], [/pig/i, '🐷'], [/stump/i, '🪵'], [/slime/i, '🟢'],
+    [/mushmom/i, '👑'], [/glowshroom|sporewood|mushroom/i, '🍄'], [/myewood|wood/i, '🌳'],
+    [/snail/i, '🐌'], [/boar|kargo/i, '🐗'], [/pig/i, '🐷'], [/stump/i, '🪵'], [/slime/i, '🟢'],
     [/octopus|echopus|bubbling|aqua|lorang|tortie/i, '🐙'], [/axe/i, '🪓'],
     [/ghost|wraith/i, '👻'], [/stirge|flyeye/i, '🦇'], [/ligator|croco|necki/i, '🐊'],
-    [/mask/i, '🎭'], [/golem|rocky|stone/i, '🗿'], [/zombie|mummydog|skeleton|skeledog/i, '💀'],
-    [/evil eye|curse eye|cold eye/i, '👁'], [/fairy|raffle/i, '🧚'], [/lupin/i, '🐺'],
-    [/drake|balrog/i, '🐉'], [/clang|iron/i, '🔔'], [/tauro/i, '🐂'], [/mano/i, '🐵']
+    [/mask/i, '🎭'], [/golem|rocky|stone/i, '🗿'], [/zombie|mummydog|skeleton|skeledog|malady/i, '💀'],
+    [/evil eye|curse eye|cold eye|eye/i, '👁'], [/fairy|raffle/i, '🧚'], [/lupin/i, '🐺'],
+    [/drake|balrog/i, '🐉'], [/clang|iron/i, '🔔'], [/dusk/i, '🌫'], [/tauro/i, '🐂'], [/mano/i, '🐵']
   ];
   for (const [re, e] of map) if (re.test(n)) return e;
   return '👾';
